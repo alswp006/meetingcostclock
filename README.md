@@ -1,115 +1,47 @@
-🇺🇸 [한국어](./README.ko.md)
+# MeetingCostClock
 
-# MeetingCostClock — Real-Time Meeting Cost Calculator
-
-A mini-app for the Toss app that calculates the real-time labor cost of meetings based on attendee count and average salary. Helps workplace users understand and reduce unnecessary meeting expenses.
-
-Users input meeting details (attendees, average salary, planned duration), start a timer, and watch the accumulated labor cost in real-time. After the meeting ends, they can review the cost breakdown and estimate waste based on meeting outcomes.
-
-## Features
-
-- 📊 **Real-Time Cost Calculation** — Live timer showing meeting cost accumulating per second
-- 📈 **Weekly Summary** — Dashboard with weekly meeting totals and recent meeting history
-- ⏱️ **Meeting Management** — Start, pause, and end meetings with automatic overflow tracking
-- 📋 **Cost Report** — Detailed breakdown of meeting costs with waste estimation based on outcomes
-- 🏆 **Team Rankings** — Leaderboard tracking team performance across challenges
-- 📱 **Meeting History** — Full record of past meetings with filtering by date range
-- 🎯 **Challenge Rules** — Daily/weekly challenges with No-Meeting-Day declarations
-- 📢 **Ad Integration** — Banner ads in history view and reward ads for report unlock
+앱인토스 (Vite + React + TDS) 참석자 수와 평균 급여를 입력하면 회의가 진행되는 동안 실시간으로 누적 비용을 보여주는 직장인용 회의비용 계산기 많은 직장인이 불필요하게 길어지는 회의로 인한 시간·인건비 낭비를 체감하지 못한 채 습관적으로 회의를 반복한다. 회의 비효율을 수치로 보여줄 도구가 없다.
 
 ## Tech Stack
 
-- **Framework**: Vite + React 18 + TypeScript
-- **UI Components**: @toss/tds-mobile (Toss Design System)
-- **Routing**: React Router DOM
-- **State Management**: React hooks + localStorage
-- **Deployment**: App-in-Toss WebView (CSR)
-- **Testing**: Vitest + @testing-library/react, Playwright (visual)
+- React 18.0.0
+- TypeScript
+- Vitest
+
+## Routes
+
+| Path | Description |
+|------|-------------|
+| `/Card` | Card |
+| `/Challenge` | Challenge |
+| `/History` | History |
+| `/Home` | Home |
+| `/Meeting` | Meeting |
+| `/Report` | Report |
+| `/Setup` | Setup |
+| `/Wrapup` | Wrapup |
 
 ## Getting Started
 
-### Install dependencies
 ```bash
-npm install
+pnpm install
+pnpm dev
 ```
 
-### Build for production
+## Development
+
 ```bash
-npx vite build
-```
-Creates a static bundle in `dist/` for Toss CDN hosting.
-
-### Build and deploy to Toss
-```bash
-npx ait build
-npx ait deploy
-```
-Submits the app to Toss review and deploys to production (requires Toss developer credentials).
-
-### Run tests
-```bash
-npx vitest run              # Unit tests
-npm run test:visual         # Visual regression tests (Playwright)
-npm run typecheck           # TypeScript type checking
+pnpm typecheck    # Type checking
+pnpm test         # Run tests
+pnpm build        # Production build
 ```
 
-## Environment Variables
+## Design Documents
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_APP_NAME` | Registered app ID in Toss console (for deployment) | No (from apps-in-toss.config.ts) |
+See `.ai-factory/` directory for full design artifacts:
+- `prd.md` — Product Requirements Document
+- `spec.md` — Technical Specification
+- `task.md` — Epic/Task Breakdown
 
-Note: This is a client-only app with no backend. All configuration is in `apps-in-toss.config.ts`.
-
-## Project Structure
-
-```
-src/
-  pages/
-    Home.tsx                 # Dashboard: active meeting, week summary, recent meetings
-    Setup.tsx                # Meeting input form
-    Meeting.tsx              # Live timer with cost display
-    Wrapup.tsx               # Meeting conclusion form
-    Report.tsx               # Cost breakdown and waste analysis
-    Card.tsx                 # Shareable meeting card detail
-    History.tsx              # Full meeting history with filters
-    Challenge.tsx            # Team rankings and challenge rules
-  components/
-    ScreenScaffold.tsx       # Page layout wrapper (SafeArea + Top/Bottom slots)
-    SummaryHero.tsx          # Large hero card for key metrics
-    CountUp.tsx              # Animated number counter
-    Card.tsx                 # Reusable card container
-    Amount.tsx               # Currency display with nowrap
-    StateView.tsx            # Empty/Loading state components
-    FloatingTabBar.tsx       # Bottom navigation (3 tabs)
-    AdSlot.tsx               # Banner ad container
-    TossRewardAd.tsx         # Reward ad gate component
-    BottomCTA.tsx            # Fixed bottom CTA button
-  lib/
-    cost.ts                  # Cost calculation formulas
-    storage.ts               # localStorage helpers
-    types.ts                 # TypeScript domain types
-    constants.ts             # Fixed values (salary, time limits)
-    messages.ts              # Toast/alert copy
-  hooks/
-    useActiveMeeting.ts      # Meeting lifecycle state
-    useToastQueue.ts         # Toast notification manager
-```
-
-## Deployment
-
-### Prerequisites
-- Toss developer account with an app registered in the console
-- App name configured in `apps-in-toss.config.ts` (case-sensitive)
-
-### Steps
-1. **Build**: `npm run build` validates TypeScript and creates the production bundle
-2. **Deploy**: `npx ait build && npx ait deploy` packages and submits to Toss CDN
-3. **Review**: Toss team reviews for compliance (no outlinks, 19+ content only, zero console errors)
-4. **Live**: Once approved, the app is hosted at `https://{appName}.web.tossmini.com`
-
-The app runs as CSR (client-side rendering only) in the Toss WebView. No server-side code or external APIs.
-
-## License
-
-MIT
+---
+Built with [AI Factory](https://github.com/alswp006/ai-factory) · Last synced: 2026-09-18
