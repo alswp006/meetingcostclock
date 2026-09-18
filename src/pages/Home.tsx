@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Asset, Button, ListRow, Paragraph, Spacing, Top } from "@toss/tds-mobile";
+import { Asset, Button, ListRow, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { useNavigate } from "react-router-dom";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
@@ -7,6 +7,7 @@ import { SummaryHero } from "@/components/SummaryHero";
 import { Card } from "@/components/Card";
 import { CountUp } from "@/components/CountUp";
 import { EmptyState } from "@/components/StateView";
+import { useToastQueue } from "@/hooks/useToastQueue";
 import { calcCost } from "@/lib/cost";
 import { formatWon } from "@/lib/format";
 import { getElapsedSec } from "@/lib/meetingTime";
@@ -45,6 +46,7 @@ function subtitle(r: MeetingRecord): string {
 
 export default function Home() {
   const navigate = useNavigate();
+  const toast = useToastQueue();
   const [now, setNow] = useState(() => Date.now());
   const [records] = useState<MeetingRecord[]>(() => loadAllRecords());
   const [active] = useState(() => loadActive());
@@ -150,6 +152,7 @@ export default function Home() {
         )
       )}
       <Spacing size={120} />
+      <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
     </ScreenScaffold>
   );
 }

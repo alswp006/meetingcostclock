@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, ConfirmDialog, Spacing, Toast, Top } from "@toss/tds-mobile";
+import { AlertDialog, Button, ConfirmDialog, Spacing, Toast, Top } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
 import { SubmitFooter } from "@/components/BottomCTA";
@@ -8,11 +8,12 @@ import { AdSlot } from "@/components/AdSlot";
 import { TimerDisplay } from "@/components/meeting/TimerDisplay";
 import { useActiveMeeting } from "@/hooks/useActiveMeeting";
 import { useNow } from "@/hooks/useNow";
-import { useToastQueue } from "@/hooks/useToastQueue";
+import { pushCarryOver, useToastQueue } from "@/hooks/useToastQueue";
 import { autoFinalizeStale } from "@/lib/autoFinalize";
 import {
   AUTO_CLOSED_12H,
   AUTO_CLOSED_8H,
+  NO_ACTIVE_MEETING,
   NO_MEETING_CANCELLED,
   QUOTA_TOAST,
   TOO_SHORT,
@@ -33,6 +34,7 @@ export default function Meeting() {
   const now = useNow();
   const toast = useToastQueue();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [tooShortOpen, setTooShortOpen] = useState(false);
   const leaving = useRef(false);
 
   // 만료된 active는 진입 시 한 번 자동 종료한다
@@ -41,18 +43,39 @@ export default function Meeting() {
     if (r.status === "not_stale") return;
     refresh();
     if (r.status !== "done") return;
-    if (r.showQuotaToast) toast.push(QUOTA_TOAST);
-    toast.push(r.staleReason === "wall_cap" ? AUTO_CLOSED_12H : AUTO_CLOSED_8H);
+    if (r.showQuotaToast) pushCarryOver(QUOTA_TOAST);
+    pushCarryOver(r.staleReason === "wall_cap" ? AUTO_CLOSED_12H : AUTO_CLOSED_8H);
+    leaving.current = true;
+    if (!r.result.ok) navigate("/", { replace: true });
     if (r.result.ok) {
-      leaving.current = true;
       navigate(`/wrapup/${r.result.record.id}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!active && !leaving.current) navigate("/", { replace: true });
+    if (!active && !leaving.current) {
+      pushCarryOver(NO_ACTIVE_MEETING);
+      navigate("/", { replace: true });
+    }
   }, [active, navigate]);
+
+  if (tooShortOpen) {
+    return (
+      <ScreenScaffold>
+        <AlertDialog
+          open
+          title={TOO_SHORT}
+          onClose={() => navigate("/", { replace: true })}
+          alertButton={
+            <AlertDialog.AlertButton onClick={() => navigate("/", { replace: true })}>
+              확인
+            </AlertDialog.AlertButton>
+          }
+        />
+      </ScreenScaffold>
+    );
+  }
 
   if (!active) return null;
 
@@ -69,15 +92,14 @@ export default function Meeting() {
     setConfirmOpen(false);
     const r: FinalizeResult = finalize();
     if (r.ok) {
-      if (r.noMeetingCancelled) toast.push(NO_MEETING_CANCELLED);
+      if (r.noMeetingCancelled) pushCarryOver(NO_MEETING_CANCELLED);
       leaving.current = true;
       navigate(`/wrapup/${r.record.id}`);
       return;
     }
     if (r.reason === "too_short") {
-      toast.push(TOO_SHORT);
       leaving.current = true;
-      navigate("/", { replace: true });
+      setTooShortOpen(true);
     } else if (r.reason === "quota") {
       toast.push(QUOTA_TOAST);
     } else if (r.reason === "no_active") {

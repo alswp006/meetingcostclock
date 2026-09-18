@@ -74,6 +74,7 @@ vi.mock("@apps-in-toss/web-framework", () => ({
 }));
 vi.mock("@/hooks/useToastQueue", () => ({
   useToastQueue: () => ({ current: null, push: pushSpy, dismiss: vi.fn() }),
+  pushCarryOver: (m: string) => pushSpy(m),
 }));
 
 // 2026-09-19 14:00 로컬 — 자정 경계를 피하려고 시각을 고정한다
@@ -186,13 +187,14 @@ describe("S3 회의 진행 페이지 (/meeting: 일시정지, 종료 확정, 자
     expect(path()).toBe("/meeting");
   });
 
-  it("AC-4[P0]: 경과 5초에 종료하면 TOO_SHORT 토스트를 띄우고 records 개수가 변하지 않으며 홈으로 간다", () => {
+  it("AC-4[P0]: 경과 5초에 종료하면 TOO_SHORT 다이얼로그를 띄우고 records 개수가 변하지 않으며 확인 시 홈으로 간다", () => {
     saveActive(makeActive(5));
     renderMeeting();
     fireEvent.click(screen.getByRole("button", { name: "회의 종료" }));
     fireEvent.click(screen.getByRole("button", { name: "종료" }));
-    expect(pushSpy).toHaveBeenCalledWith(TOO_SHORT);
+    expect(screen.getByText(TOO_SHORT)).toBeInTheDocument();
     expect(records()).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "확인" }));
     expect(path()).toBe("/");
   });
 
