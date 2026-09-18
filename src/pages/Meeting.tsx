@@ -37,8 +37,9 @@ export default function Meeting() {
   const [tooShortOpen, setTooShortOpen] = useState(false);
   const leaving = useRef(false);
 
-  // 만료된 active는 진입 시 한 번 자동 종료한다
+  // 만료된 active는 진입 시, 그리고 매 tick마다 상한을 확인해 자동 종료한다
   useEffect(() => {
+    if (leaving.current) return;
     const r = autoFinalizeStale(Date.now());
     if (r.status === "not_stale") return;
     refresh();
@@ -51,7 +52,7 @@ export default function Meeting() {
       navigate(`/wrapup/${r.result.record.id}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [now]);
 
   useEffect(() => {
     if (!active && !leaving.current) {

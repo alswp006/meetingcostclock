@@ -21,6 +21,7 @@ import { calcCost } from "@/lib/cost";
 import { localDateKeysBetween, resolveStale } from "@/lib/meetingTime";
 import { finalizeActive } from "@/lib/meetingLifecycle";
 import { autoFinalizeStale } from "@/lib/meetingLifecycle";
+import { resetAutoFinalizeRetries } from "@/lib/autoFinalize";
 import { startMeeting, pauseMeeting, resumeMeeting } from "@/lib/meetingLifecycle";
 import {
   STORAGE_KEY_ACTIVE,
@@ -41,6 +42,7 @@ import {
 describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, finalizeActive 롤백, autoFinalizeStale)", () => {
   beforeEach(() => {
     localStorage.clear();
+    resetAutoFinalizeRetries();
     vi.clearAllMocks();
   });
 
@@ -491,13 +493,13 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
       expect(activeAfter).not.toBeNull();
     });
 
-    it("should return suppressed when no active meeting exists", () => {
+    it("should return not_stale when no active meeting exists", () => {
       // No active meeting set up
       // Call autoFinalizeStale
       const result = autoFinalizeStale(Date.now());
 
       // Assertions (will fail until implementation)
-      expect(result.status).toBe("suppressed");
+      expect(result.status).toBe("not_stale");
     });
 
     it("should retry quota errors up to 2 times during autoFinalizeStale", () => {

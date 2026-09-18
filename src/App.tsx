@@ -37,7 +37,7 @@ export default function App() {
   return (
     // @ai-factory:providers — 전역 Provider는 <Routes>를 감싸는 이 자리에 둔다(main.tsx는 @AI:ANCHOR, 수정 금지).
     <ErrorBoundary resetKey={pathname}>
-    <StaleGate />
+    <StaleGate>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/setup" element={<Setup />} />
@@ -61,6 +61,7 @@ export default function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     {TAB_PATHS.has(pathname) && <FloatingTabBar items={TABS} />}
+    </StaleGate>
     </ErrorBoundary>
   );
 }

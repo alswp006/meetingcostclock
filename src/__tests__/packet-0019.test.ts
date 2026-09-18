@@ -36,7 +36,15 @@ vi.mock("@apps-in-toss/web-framework", () => ({
 vi.mock("@/pages/Home", () => ({ default: () => React.createElement("div", null, "PAGE-HOME") }));
 vi.mock("@/pages/Setup", () => ({ default: () => React.createElement("div", null, "PAGE-SETUP") }));
 vi.mock("@/pages/Meeting", () => ({ default: () => React.createElement("div", null, "PAGE-MEETING") }));
-vi.mock("@/pages/Wrapup", () => ({ default: () => React.createElement("div", null, "PAGE-WRAPUP") }));
+vi.mock("@/pages/Wrapup", async () => {
+  const { useToastQueue } = await import("@/hooks/useToastQueue");
+  return {
+    default: () => {
+      const toast = useToastQueue();
+      return React.createElement("div", null, "PAGE-WRAPUP", toast.current);
+    },
+  };
+});
 vi.mock("@/pages/Report", () => ({ default: () => React.createElement("div", null, "PAGE-REPORT") }));
 vi.mock("@/pages/Card", () => ({ default: () => React.createElement("div", null, "PAGE-CARD") }));
 vi.mock("@/pages/History", () => ({ default: () => React.createElement("div", null, "PAGE-HISTORY") }));
@@ -124,7 +132,8 @@ describe("App.tsx 라우팅, FloatingTabBar, ErrorBoundary, StaleGate 배선", (
     expect(saved).toHaveLength(1);
     expect(saved[0].durationSec).toBe(28800);
     expect(loadActive()).toBeNull();
-    expect(screen.getByText(AUTO_CLOSED_8H)).toBeInTheDocument();
+    // 처리가 끝난 뒤 회고 화면으로 가고, 안내는 그 화면에서 뜬다
+    expect(screen.getByText(new RegExp(`PAGE-WRAPUP.*${AUTO_CLOSED_8H}`))).toBeInTheDocument();
   });
 
   it("AC-2[P0]: 만료되지 않은 active(10분)는 종료하지 않고 토스트도 없다", async () => {
