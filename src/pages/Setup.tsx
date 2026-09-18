@@ -1,11 +1,79 @@
-// @ai-factory:placeholder
-// 배선 선행(wiring-first)이 깐 자리 페이지다 — App.tsx에 `/setup`로 이미 연결돼 있다.
-// 이 화면을 담당하는 패킷은 이 파일을 **통째로 교체**하라(위 마커 주석 포함 — 마커가 남으면 산출물로 인정되지 않는다).
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AlertDialog, Toast } from "@toss/tds-mobile";
+import { ScreenScaffold } from "@/components/ScreenScaffold";
+import { SetupForm } from "@/components/setup/SetupForm";
+import { useActiveMeeting } from "@/hooks/useActiveMeeting";
+import { useToastQueue } from "@/hooks/useToastQueue";
+import { loadLastSetup } from "@/lib/storage";
+import { isMeetingSetupInput } from "@/lib/schema";
+import { QUOTA_TOAST, RESTART_SAVED } from "@/lib/messages";
+import type { MeetingSetupInput, RouteState } from "@/lib/types";
+
+function pickInitial(state: RouteState["/setup"]): MeetingSetupInput | null {
+  const prefill = state ? state.prefill : null;
+  if (isMeetingSetupInput(prefill)) return prefill;
+  const last = loadLastSetup();
+  if (!last) return null;
+  return {
+    title: last.title,
+    teamName: last.teamName,
+    attendees: last.attendees,
+    annualSalaryManwon: last.annualSalaryManwon,
+    plannedMinutes: last.plannedMinutes,
+  };
+}
+
 export default function Setup() {
+  const navigate = useNavigate();
+  const state = (useLocation().state as RouteState["/setup"]) ?? null;
+  const [initial] = useState(() => pickInitial(state));
+  const { active, start, finalize } = useActiveMeeting();
+  const toast = useToastQueue();
+
+  const handleSubmit = (input: MeetingSetupInput) => {
+    const r = start(input);
+    if (r.ok) {
+      navigate("/meeting");
+      return;
+    }
+    toast.push(QUOTA_TOAST);
+  };
+
+  const handleRestart = () => {
+    const r = finalize();
+    if (!r.ok && r.reason === "quota") {
+      toast.push(QUOTA_TOAST);
+      return;
+    }
+    toast.push(RESTART_SAVED);
+  };
+
   return (
-    <main data-testid="placeholder-setup">
-      <h1>회의 설정</h1>
-      <p>이 화면은 준비 중이에요.</p>
-    </main>
+    <ScreenScaffold>
+      <SetupForm initial={initial} onSubmit={handleSubmit} />
+      <AlertDialog
+        open={!!active}
+        title="진행 중인 회의가 있어요"
+        description="이어서 진행하거나, 지금 회의를 저장하고 새로 시작할 수 있어요"
+        onClose={() => navigate("/meeting")}
+        alertButton={
+          <>
+            <AlertDialog.AlertButton onClick={() => navigate("/meeting")}>
+              이어서 진행
+            </AlertDialog.AlertButton>
+            <AlertDialog.AlertButton onClick={handleRestart}>
+              종료하고 새로 시작
+            </AlertDialog.AlertButton>
+          </>
+        }
+      />
+      <Toast
+        open={toast.current !== null}
+        position="bottom"
+        text={toast.current ?? ""}
+        onClose={toast.dismiss}
+      />
+    </ScreenScaffold>
   );
 }
