@@ -96,6 +96,7 @@ export function SetupForm({
       <Spacing size={16} />
       <TextField
         variant="box"
+        labelOption="sustain"
         label="회의명"
         placeholder="예: 주간 스프린트"
         help="비워두면 '이름 없는 회의'로 저장해요"
@@ -107,6 +108,7 @@ export function SetupForm({
       <Spacing size={16} />
       <TextField
         variant="box"
+        labelOption="sustain"
         label="팀명"
         placeholder="예: 플랫폼팀"
         help="비워두면 '우리 팀'으로 저장해요"
@@ -118,6 +120,7 @@ export function SetupForm({
       <Spacing size={16} />
       <TextField
         variant="box"
+        labelOption="sustain"
         label="참석자 수"
         placeholder="예: 5"
         inputMode="numeric"
@@ -130,6 +133,7 @@ export function SetupForm({
       <Spacing size={16} />
       <TextField
         variant="box"
+        labelOption="sustain"
         label="평균 연봉(만 원)"
         placeholder="예: 5000"
         inputMode="numeric"
@@ -142,6 +146,7 @@ export function SetupForm({
       <Spacing size={16} />
       <TextField
         variant="box"
+        labelOption="sustain"
         label="예정 시간(분)"
         placeholder="예: 30"
         inputMode="numeric"
@@ -155,9 +160,6 @@ export function SetupForm({
       <Card testId="hourly-preview">
         {hourly ? (
           <>
-            <Paragraph.Text typography="st6" color="var(--adaptiveGrey600)">
-              팀 시급
-            </Paragraph.Text>
             <Paragraph.Text typography="t3">{`팀 시급 ${formatWon(hourly.team)}`}</Paragraph.Text>
             <Spacing size={8} />
             <Paragraph.Text typography="st5" color="var(--adaptiveGrey600)">
@@ -173,7 +175,7 @@ export function SetupForm({
           </Paragraph.Text>
         )}
       </Card>
-      <Spacing size={96} />
+      <Spacing size={160} />
       <SubmitFooter label="회의 시작" disabled={hasRangeError} onClick={handleSubmit} />
     </>
   );

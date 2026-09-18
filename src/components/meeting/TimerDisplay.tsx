@@ -2,7 +2,7 @@ import { Paragraph, Spacing } from "@toss/tds-mobile";
 import { Card } from "@/components/Card";
 import { SummaryHero } from "@/components/SummaryHero";
 import { CountUp } from "@/components/CountUp";
-import { calcCost } from "@/lib/cost";
+import { calcCost, calcHourly } from "@/lib/cost";
 import { formatHMS, formatMinutes, formatWon } from "@/lib/format";
 import { getElapsedSec } from "@/lib/meetingTime";
 import type { ActiveMeeting } from "@/lib/types";
@@ -15,6 +15,7 @@ export function TimerDisplay({ active, now }: { active: ActiveMeeting; now: numb
   const elapsed = getElapsedSec(active, now);
   const cost = calcCost(attendees, annualSalaryManwon, elapsed);
 
+  const perMinute = calcHourly(attendees, annualSalaryManwon).perMinute;
   const overSec = Math.max(0, elapsed - plannedMinutes * 60);
   const overCost = overSec > 0 ? calcCost(attendees, annualSalaryManwon, overSec) : 0;
   const paused = active.pausedAt !== null;
@@ -25,7 +26,7 @@ export function TimerDisplay({ active, now }: { active: ActiveMeeting; now: numb
         testId="timer-hero"
         label="지금까지 쓴 비용"
         value={<CountUp value={cost} durationMs={0} />}
-        caption={`${formatHMS(elapsed)} · ${attendees}명`}
+        caption={`${formatHMS(elapsed)} · ${attendees}명 · 1분당 ${formatWon(perMinute)}`}
       />
       <Spacing size={16} />
       <Card testId="timer-plan-card">
