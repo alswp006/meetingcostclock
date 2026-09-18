@@ -21,6 +21,10 @@ vi.mock("@toss/tds-mobile", () => ({
   Badge: ({ children }: any) => h("span", null, children),
   Asset: { ContentIcon: () => null },
   Toast: ({ open, text }: any) => (open ? h("div", { role: "status" }, text) : null),
+  AlertDialog: Object.assign(
+    ({ open, title, alertButton }: any) => (open ? h("div", { role: "alertdialog" }, title, alertButton) : null),
+    { AlertButton: ({ children, onClick }: any) => h("button", { onClick }, children) },
+  ),
   FixedBottomCTA: ({ children, onClick, disabled }: any) =>
     h("button", { onClick, disabled }, children),
   Button: ({ children, onClick, disabled }: any) => h("button", { onClick, disabled }, children),

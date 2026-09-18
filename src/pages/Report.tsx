@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Button, Spacing, Top } from "@toss/tds-mobile";
+import { AlertDialog, Button, Spacing, Toast, Top } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
 import { SubmitFooter } from "@/components/BottomCTA";
@@ -7,12 +8,22 @@ import { RecordNotFound } from "@/components/RecordNotFound";
 import { TossRewardAd } from "@/components/TossRewardAd";
 import { ReportBody } from "@/components/report/ReportBody";
 import { useRecordParam } from "@/hooks/useRecordParam";
-import { updateRecord } from "@/lib/storage";
+import { pushCarryOver, useToastQueue } from "@/hooks/useToastQueue";
+import { deleteRecord, updateRecord } from "@/lib/storage";
+import {
+  QUOTA_TOAST,
+  RECORD_ALREADY_DELETED,
+  RECORD_DELETED,
+  RECORD_DELETE_FAILED,
+} from "@/lib/messages";
 import type { RouteState } from "@/lib/types";
 
 export default function Report() {
   const record = useRecordParam();
   const navigate = useNavigate();
+  const toast = useToastQueue();
+  const [unlockFailed, setUnlockFailed] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!record) return <RecordNotFound />;
   if (record.outcome === null) return <Navigate to={`/wrapup/${record.id}`} replace />;
@@ -21,9 +32,27 @@ export default function Report() {
   // 저장 실패해도 이번 열람에서는 본문을 보여준다(게이트는 이미 열림).
   const unlock = () => {
     try {
-      updateRecord(record.id, { reportUnlocked: true });
+      const r = updateRecord(record.id, { reportUnlocked: true });
+      if (!r.ok) {
+        setUnlockFailed(true);
+        toast.push(r.reason === "quota" ? QUOTA_TOAST : "리포트 해제를 저장하지 못했어요. 다시 시도해 주세요");
+      }
     } catch {
-      /* 무시 */
+      setUnlockFailed(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    setConfirmOpen(false);
+    const r = deleteRecord(record.id);
+    if (r.ok) {
+      pushCarryOver(RECORD_DELETED);
+      navigate("/history", { replace: true });
+    } else if (r.reason === "not_found") {
+      pushCarryOver(RECORD_ALREADY_DELETED);
+      navigate("/history", { replace: true });
+    } else {
+      toast.push(r.reason === "quota" ? QUOTA_TOAST : RECORD_DELETE_FAILED);
     }
   };
 
@@ -75,9 +104,21 @@ export default function Report() {
         </TossRewardAd>
       )}
       <Spacing size={24} />
-      <Button variant="weak" size="large" display="block" onClick={share}>
+      <Button variant="weak" size="large" display="block" onClick={share} disabled={unlockFailed}>
         공유 카드 만들기
       </Button>
+      <Spacing size={8} />
+      <Button variant="weak" size="large" display="block" onClick={() => setConfirmOpen(true)}>
+        기록 삭제
+      </Button>
+      <AlertDialog
+        open={confirmOpen}
+        title="이 기록을 삭제할까요?"
+        description="삭제한 기록은 되돌릴 수 없어요"
+        onClose={() => setConfirmOpen(false)}
+        alertButton={<AlertDialog.AlertButton onClick={confirmDelete}>삭제</AlertDialog.AlertButton>}
+      />
+      <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
       <Spacing size={96} />
     </ScreenScaffold>
   );

@@ -36,13 +36,13 @@ export function ReportBody({ record, outcome }: { record: MeetingRecord; outcome
   return (
     <>
       <SummaryHero
-        testId="report-hero"
+        testId="report-summary-hero"
         label="이번 회의 비용"
         value={<CountUp value={waste.totalCost} />}
         caption={`${minutes}분 · ${record.attendees}명 · 팀 시급 ${formatWon(team)}`}
       />
       <Spacing size={16} />
-      <Card testId="report-waste-card">
+      <Card testId="report-breakdown-card">
         <Row label="기본 비용" value={formatWon(waste.baseCost)} />
         <Row label={`초과 비용 (${overtimeMin}분)`} value={formatWon(waste.overtimeCost)} />
         <Row label={`낭비 추정 (${waste.wasteRate}%)`} value={formatWon(waste.wasteCost)} />

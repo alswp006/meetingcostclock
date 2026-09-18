@@ -21,6 +21,10 @@ vi.mock("@toss/tds-mobile", () => ({
   Badge: ({ children }: any) => h("span", null, children),
   Asset: { ContentIcon: () => null },
   Toast: ({ open, text }: any) => (open ? h("div", { role: "status" }, text) : null),
+  AlertDialog: Object.assign(
+    ({ open, title, alertButton }: any) => (open ? h("div", { role: "alertdialog" }, title, alertButton) : null),
+    { AlertButton: ({ children, onClick }: any) => h("button", { onClick }, children) },
+  ),
   FixedBottomCTA: ({ children, onClick, disabled }: any) =>
     h("button", { onClick, disabled }, children),
   Button: ({ children, onClick, disabled }: any) => h("button", { onClick, disabled }, children),
@@ -188,5 +192,14 @@ describe("S5 리포트 페이지 (/report/:id: 보상형 광고 게이트, 낭�
     renderAt("nope");
     expect(screen.getByText("기록을 찾을 수 없어요")).toBeInTheDocument();
     expect(screen.queryByTestId("path")).toBeNull();
+  });
+
+  it("AC-8: 기록 삭제는 확인 후 기록을 지우고 /history로 이동한다", () => {
+    seed({ reportUnlocked: true });
+    renderAt("r1");
+    fireEvent.click(screen.getByRole("button", { name: "기록 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "삭제" }));
+    expect(JSON.parse(localStorage.getItem(KEY) ?? "[]")).toHaveLength(0);
+    expect(screen.getByTestId("path").textContent).toBe("/history");
   });
 });
