@@ -67,3 +67,10 @@ export function calcWaste(
     totalCost > 0 ? Math.round((wasteCost / totalCost) * 100) : 0;
   return { overtimeSec, overtimeCost, baseCost, totalCost, wasteCost, wasteRate };
 }
+
+/** 계약 함수: 경과 ms × 시급(원) → 누적 비용(원, floor). 잘못된 입력은 0 */
+export function calculateCost(durationMs: number, hourlyRateKrw: number): number {
+  if (!Number.isFinite(durationMs) || !Number.isFinite(hourlyRateKrw)) return 0;
+  if (durationMs <= 0 || hourlyRateKrw <= 0) return 0;
+  return Math.floor((durationMs * hourlyRateKrw) / 3_600_000);
+}

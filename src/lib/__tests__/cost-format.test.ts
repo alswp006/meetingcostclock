@@ -30,3 +30,26 @@ describe("cost/format/messages", () => {
     expect(m.RESTART_SAVED).toBe("이전 회의를 저장했어요. 회고는 기록 탭에서 입력할 수 있어요");
   });
 });
+
+import { calculateCost } from "@/lib/cost";
+import { formatDuration, formatPrice } from "@/lib/format";
+
+describe("contract functions", () => {
+  it("calculateCost", () => {
+    expect(calculateCost(3_600_000, 30000)).toBe(30000);
+    expect(calculateCost(1_800_000, 25001)).toBe(12500);
+    expect(calculateCost(-1, 30000)).toBe(0);
+    expect(calculateCost(1000, NaN)).toBe(0);
+  });
+  it("formatDuration", () => {
+    expect(formatDuration(0)).toBe("00:00");
+    expect(formatDuration(125_000)).toBe("02:05");
+    expect(formatDuration(3_725_000)).toBe("01:02:05");
+  });
+  it("formatPrice", () => {
+    expect(formatPrice(90144)).toBe("90,144원");
+    expect(formatPrice(1_250_000, { compact: true })).toBe("125만원");
+    expect(formatPrice(15000, { compact: true })).toBe("1.5만원");
+    expect(formatPrice(9000, { compact: true })).toBe("9,000원");
+  });
+});
