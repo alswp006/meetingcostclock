@@ -97,9 +97,10 @@ export type FinalizeResult =
       ok: true;
       record: MeetingRecord;
       cancelledNoMeetingDates: string[];
+      noMeetingCancelled: boolean;
       autoClosed: null | "elapsed_cap" | "wall_cap";
     }
-  | { ok: false; reason: "no_active" | "too_short" | "quota" };
+  | { ok: false; reason: "no_active" | "too_short" | "quota" | "unknown" };
 
 export type StaleResult =
   | { stale: false }

@@ -74,7 +74,7 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
     let callCount = 0;
     const originalSetItem = Storage.prototype.setItem;
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-    setItemSpy.mockImplementation(function (key: string, value: string) {
+    setItemSpy.mockImplementation(function (this: Storage, key: string, value: string) {
       callCount += 1;
       if (callCount === n) {
         const err = new Error("quota exceeded");
@@ -251,7 +251,7 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
       saveActive(active);
       const noMeetingDaysSnapshot: NoMeetingDay[] = [
         {
-          id: `nmd-${Date.now()}`,
+          id: "2026-09-19",
           date: "2026-09-19",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -353,14 +353,14 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
       const noMeetingDays: NoMeetingDay[] = [
         // In range (should be cancelled)
         {
-          id: `nmd-in-1`,
+          id: dateKeysInRange[0],
           date: dateKeysInRange[0],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
         // Outside range (should remain)
         {
-          id: `nmd-out-1`,
+          id: "2026-08-01",
           date: "2026-08-01",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -379,8 +379,8 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
 
       // Verify remaining NoMeetingDays
       const remaining = loadNoMeetingDays();
-      expect(remaining.some((nmd) => nmd.id === "nmd-out-1")).toBe(true);
-      expect(remaining.some((nmd) => nmd.id === "nmd-in-1")).toBe(false);
+      expect(remaining.some((nmd) => nmd.id === "2026-08-01")).toBe(true);
+      expect(remaining.some((nmd) => nmd.id === dateKeysInRange[0])).toBe(false);
     });
 
     it("should include noMeetingCancelled flag in result when NoMeetingDays were cancelled", () => {
@@ -511,7 +511,7 @@ describe("Packet 0005: 회의 수명주기 (startMeeting, 일시정지/재개, f
       let callCount = 0;
       const originalSetItem = Storage.prototype.setItem;
       const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-      setItemSpy.mockImplementation(function (key: string, value: string) {
+      setItemSpy.mockImplementation(function (this: Storage, key: string, value: string) {
         callCount += 1;
         if (callCount <= 2) {
           const err = new Error("quota exceeded");

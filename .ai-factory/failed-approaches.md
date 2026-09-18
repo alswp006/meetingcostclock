@@ -18,3 +18,16 @@
  src/lib/__tests__/failSetItemOnNth.ts |  18 +++++
  src/lib/__tests__/storage.test.ts     | 131 ++++++++++++++++++++++++++++++
  src/lib/storage.ts          
+
+## 회의 수명주기 (startMeeting, 일시정지/재개, finalizeActive 롤백, autoFinalizeStale) — fix loop 2026-09-18T16:48:14.440Z
+- 시도 횟수: 1
+- 트리아지: trivial (1 minor test failures)
+- 에러 변화:
+  Attempt 1: initial errors — tsc:0|lint:0|test:1
+- 비용: $0.4508
+- 수정된 파일:
+ .ai-factory/shared-context.md              |  30 ++-----
+ src/__tests__/packet-0005.test.ts          |  14 ++--
+ src/lib/__tests__/meetingLifecycle.test.ts | 128 +++++++++++++++++++++++++++++
+ src/lib/autoFinalize.ts                    |  32 ++++++++
+ src/lib/finalize.ts                        | 12

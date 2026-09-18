@@ -6,7 +6,7 @@ type TimeFields = Pick<ActiveMeeting, "startedAt" | "pausedAt" | "totalPausedMs"
 export type CapReason = "elapsed_cap" | "wall_cap";
 
 export type StaleDetail =
-  | { stale: false }
+  | { stale: false; reason?: undefined }
   | { stale: true; reason: CapReason; endedAtMs: number; durationSec: number };
 
 const MAX_ELAPSED_MS = MAX_DURATION_SEC * 1000;
