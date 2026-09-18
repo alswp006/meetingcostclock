@@ -107,8 +107,8 @@ export default function Challenge() {
       </Button>
       {reason ? (
         <>
-          <Spacing size={8} />
-          <Paragraph.Text typography="st6" color="secondary">
+          <Spacing size={12} />
+          <Paragraph.Text typography="t7" color="var(--adaptiveGrey600)">
             {reason}
           </Paragraph.Text>
         </>
@@ -122,7 +122,7 @@ export default function Challenge() {
           left={icon(b.icon)}
           contents={<ListRow.Texts type="2RowTypeA" top={b.name} bottom={b.desc} />}
           right={
-            <Paragraph.Text typography="st6" color={earnedIds.has(b.id) ? undefined : "tertiary"}>
+            <Paragraph.Text typography="t7" color={earnedIds.has(b.id) ? undefined : "tertiary"}>
               {earnedIds.has(b.id) ? "획득" : "미획득"}
             </Paragraph.Text>
           }
@@ -132,7 +132,7 @@ export default function Challenge() {
       <Paragraph.Text typography="t5">이번 달 선언일</Paragraph.Text>
       <Spacing size={8} />
       {monthDays.length === 0 ? (
-        <Paragraph.Text typography="st5" color="tertiary">
+        <Paragraph.Text typography="t7" color="var(--adaptiveGrey600)">
           아직 선언한 날이 없어요
         </Paragraph.Text>
       ) : (

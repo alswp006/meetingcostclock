@@ -162,15 +162,15 @@ export function SetupForm({
           <>
             <Paragraph.Text typography="t3">{`팀 시급 ${formatWon(hourly.team)}`}</Paragraph.Text>
             <Spacing size={8} />
-            <Paragraph.Text typography="st5" color="var(--adaptiveGrey600)">
+            <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
               {`1인 시급 ${formatWon(hourly.perPerson)}`}
             </Paragraph.Text>
-            <Paragraph.Text typography="st5" color="var(--adaptiveGrey600)">
+            <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
               {`분당 ${formatWon(hourly.perMinute)}`}
             </Paragraph.Text>
           </>
         ) : (
-          <Paragraph.Text typography="st5" color="var(--adaptiveGrey500)">
+          <Paragraph.Text typography="t7" color="var(--adaptiveGrey700)">
             참석자 수와 연봉을 입력하면 시급이 계산돼요
           </Paragraph.Text>
         )}

@@ -69,7 +69,8 @@ export function HistoryList() {
     return (
       <EmptyState
         testId="history-error"
-        icon={<Asset.ContentIcon name="icon-search-bold-mono" alt="" style={{ width: 48, height: 48 }} />}
+        fill
+        icon={<Asset.ContentIcon name="icon-calendar-check-mono" alt="" style={{ width: 48, height: 48 }} />}
         title="기록을 불러오지 못했어요"
         description="잠시 뒤에 다시 시도해 주세요"
         action={
@@ -85,11 +86,12 @@ export function HistoryList() {
     return (
       <EmptyState
         testId="history-empty"
-        icon={<Asset.ContentIcon name="icon-search-bold-mono" alt="" style={{ width: 48, height: 48 }} />}
+        fill
+        icon={<Asset.ContentIcon name="icon-calendar-check-mono" alt="" style={{ width: 48, height: 48 }} />}
         title="아직 기록이 없어요"
         description="회의를 끝내면 여기에 비용이 쌓여요"
         action={
-          <Button variant="weak" size="medium" onClick={() => navigate("/setup")}>
+          <Button variant="weak" size="large" onClick={() => navigate("/setup")}>
             새 회의 시작
           </Button>
         }

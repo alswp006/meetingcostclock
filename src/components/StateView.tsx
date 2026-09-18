@@ -14,7 +14,10 @@ export function EmptyState({
   description,
   action,
   testId,
+  fill,
 }: {
+  /** 화면 전체가 빈 경우 세로 중앙 배치 */
+  fill?: boolean;
   /** Asset.ContentIcon 등(선택) */
   icon?: ReactNode;
   title: ReactNode;
@@ -30,6 +33,8 @@ export function EmptyState({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        justifyContent: fill ? "center" : undefined,
+        minHeight: fill ? "50dvh" : undefined,
         textAlign: "center",
         padding: "48px 24px",
       }}

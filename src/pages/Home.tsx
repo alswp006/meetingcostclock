@@ -137,9 +137,10 @@ export default function Home() {
       ) : (
         !active && (
           <EmptyState
+            fill
             icon={
               <Asset.ContentIcon
-                name="icon-search-bold-mono"
+                name="icon-calendar-check-mono"
                 alt=""
                 style={{ width: 48, height: 48 }}
               />
