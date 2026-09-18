@@ -25,6 +25,9 @@ vi.mock("@toss/tds-mobile", () => {
         help ? h("span", { "data-testid": "help" }, help) : null,
       ),
     ),
+    Top: Object.assign(({ title }: any) => h("div", { "data-testid": "top" }, title), {
+      TitleParagraph: ({ children }: any) => h("h1", null, children),
+    }),
   };
 });
 vi.mock("@apps-in-toss/web-framework", () => ({
