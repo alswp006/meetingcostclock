@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 const h = React.createElement;
 
-const mockShare = vi.fn(async () => {
+const mockShare = vi.fn<(args: unknown) => Promise<void>>(async () => {
   throw new Error("share unsupported");
 });
 const mockSetClipboardText = vi.fn(async () => undefined);
