@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Button, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
 import { Card as CardBox } from "@/components/Card";
@@ -9,6 +10,7 @@ import { useRecordParam } from "@/hooks/useRecordParam";
 import { useToastQueue } from "@/hooks/useToastQueue";
 import { renderShareCard } from "@/lib/shareCard";
 import { updateRecord } from "@/lib/storage";
+import { QUOTA_TOAST } from "@/lib/messages";
 import type { MeetingRecord } from "@/lib/types";
 
 function CardView({ record, onToast }: { record: MeetingRecord; onToast: (m: string) => void }) {
@@ -56,11 +58,14 @@ export default function Card() {
   const [unlocked, setUnlocked] = useState(false);
 
   if (!record) return <RecordNotFound />;
+  if (record.outcome === null) return <Navigate to={`/wrapup/${record.id}`} replace />;
+  if (!record.reportUnlocked) return <Navigate to={`/report/${record.id}`} replace />;
 
   const open = record.shareUnlocked || unlocked;
   const onRewarded = () => {
     try {
-      updateRecord(record.id, { shareUnlocked: true, updatedAt: new Date().toISOString() });
+      const r = updateRecord(record.id, { shareUnlocked: true, updatedAt: new Date().toISOString() });
+      if (!r.ok) toast.push(r.reason === "quota" ? QUOTA_TOAST : "카드 해제를 저장하지 못했어요. 다시 시도해 주세요");
     } catch {
       /* 저장 실패해도 이번 화면에서는 열어 둔다 */
     }

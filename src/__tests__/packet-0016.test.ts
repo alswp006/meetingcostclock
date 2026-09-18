@@ -67,7 +67,7 @@ const rec: MeetingRecord = {
   totalCost: 90144,
   outcome: "none",
   wasteCost: 60096,
-  reportUnlocked: false,
+  reportUnlocked: true,
   shareUnlocked: false,
   createdAt: "2026-09-14T01:45:00.000Z",
   updatedAt: "2026-09-14T01:45:00.000Z",
@@ -179,5 +179,18 @@ describe("[부가] S6 공유 카드 페이지 (/report/:id/card)", () => {
     expect(screen.getByText("기록을 찾을 수 없어요")).toBeInTheDocument();
     expect(screen.queryAllByTestId("reward-ad")).toHaveLength(0);
     expect(container.querySelector("canvas")).toBeNull();
+  });
+
+  it("AC-7: 회고를 안 한 기록(outcome=null)은 /wrapup/:id로 보낸다", () => {
+    seed({ outcome: null });
+    const { container } = renderAt("r1");
+    expect(container.querySelector("canvas")).toBeNull();
+    expect(screen.queryAllByTestId("reward-ad")).toHaveLength(0);
+  });
+
+  it("AC-12: 리포트를 안 연 기록(reportUnlocked=false)은 카드 게이트에 들어가지 않는다", () => {
+    seed({ reportUnlocked: false });
+    renderAt("r1");
+    expect(screen.queryAllByTestId("reward-ad")).toHaveLength(0);
   });
 });
