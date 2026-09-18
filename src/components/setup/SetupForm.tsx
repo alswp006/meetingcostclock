@@ -70,6 +70,12 @@ export function SetupForm({
     initial?.plannedMinutes != null ? String(initial.plannedMinutes) : "30"
   );
   const [submitted, setSubmitted] = useState(false);
+  const [signNotice, setSignNotice] = useState(false);
+
+  const onAttendeesChange = (raw: string) => {
+    setSignNotice(raw.includes("-"));
+    setAttendees(digitsOnly(raw));
+  };
 
   const errors = validate(attendees, salary, minutes, submitted);
   const hasRangeError = Object.keys(validate(attendees, salary, minutes, false)).length > 0;
@@ -121,26 +127,29 @@ export function SetupForm({
       <TextField
         variant="box"
         labelOption="sustain"
-        label="참석자 수"
+        label="참석자 수 (필수)"
         placeholder="예: 5"
         inputMode="numeric"
         enterKeyHint="next"
         value={attendees}
         hasError={!!errors.attendees}
-        help={errors.attendees}
-        onChange={(e) => setAttendees(digitsOnly(e.target.value))}
+        help={
+          errors.attendees ??
+          (signNotice ? "참석자 수는 2명 이상 숫자만 입력할 수 있어요" : undefined)
+        }
+        onChange={(e) => onAttendeesChange(e.target.value)}
       />
       <Spacing size={16} />
       <TextField
         variant="box"
         labelOption="sustain"
-        label="평균 연봉(만 원)"
+        label="평균 연봉(만 원, 필수)"
         placeholder="예: 5000"
         inputMode="numeric"
         enterKeyHint="next"
         value={salary}
         hasError={!!errors.salary}
-        help={errors.salary}
+        help={errors.salary ?? "회의 비용을 계산하는 데 써요"}
         onChange={(e) => setSalary(digitsOnly(e.target.value))}
       />
       <Spacing size={16} />
@@ -162,12 +171,14 @@ export function SetupForm({
           <>
             <Paragraph.Text typography="t3">{`팀 시급 ${formatWon(hourly.team)}`}</Paragraph.Text>
             <Spacing size={8} />
-            <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
-              {`1인 시급 ${formatWon(hourly.perPerson)}`}
-            </Paragraph.Text>
-            <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
-              {`분당 ${formatWon(hourly.perMinute)}`}
-            </Paragraph.Text>
+            <div style={{ display: "flex", flexWrap: "wrap", columnGap: 12, rowGap: 4 }}>
+              <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
+                {`1인 시급 ${formatWon(hourly.perPerson)}`}
+              </Paragraph.Text>
+              <Paragraph.Text typography="t6" color="var(--adaptiveGrey700)">
+                {`분당 ${formatWon(hourly.perMinute)}`}
+              </Paragraph.Text>
+            </div>
           </>
         ) : (
           <Paragraph.Text typography="t7" color="var(--adaptiveGrey700)">
@@ -175,7 +186,7 @@ export function SetupForm({
           </Paragraph.Text>
         )}
       </Card>
-      <Spacing size={160} />
+      <Spacing size={200} />
       <SubmitFooter label="회의 시작" disabled={hasRangeError} onClick={handleSubmit} />
     </>
   );
