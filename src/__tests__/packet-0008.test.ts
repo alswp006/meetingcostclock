@@ -113,7 +113,7 @@ describe("상태 훅 (useActiveMeeting, useNow, useToastQueue, useRecordParam, R
       durationSec: 600,
       totalCost: 55000,
       outcome: "decided",
-      wasteCost: null,
+      wasteCost: 0,
       reportUnlocked: false,
       shareUnlocked: false,
     } as any);
