@@ -170,6 +170,8 @@ describe("[부가] S7 기록 페이지 (/history: 목록 탭, 팀 랭킹 탭, �
 
     fireEvent.click(screen.getByRole("tab", { name: "팀 랭킹" }));
 
+    // 기본값은 "전체" — 이번 달로 좁힌다
+    fireEvent.click(screen.getByRole("radio", { name: "이번 달" }));
     const rows = await screen.findAllByTestId("team-rank-row");
     expect(rows).toHaveLength(2);
     expect(flat(rows[0])).toContain("1위팀A180,288원");

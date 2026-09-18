@@ -91,6 +91,21 @@ export function mockTds() {
       },
     ),
 
+    SegmentedControl: Object.assign(
+      ({ children, value, onChange }: any) =>
+        React.createElement(
+          "div",
+          { role: "radiogroup" },
+          React.Children.map(children, (c: any) =>
+            React.cloneElement(c, { selected: c.props.value === value, onSelect: () => onChange?.(c.props.value) }),
+          ),
+        ),
+      {
+        Item: ({ children, selected, onSelect }: any) =>
+          React.createElement("button", { role: "radio", "aria-checked": !!selected, onClick: onSelect }, children),
+      },
+    ),
+
     // NOTE: TDS has NO "TabBar" export (hallucinated API). 하단 탭은 로컬
     // src/components/FloatingTabBar 를 쓰며, 그 컴포넌트는 TDS를 import하지 않아
     // 여기서 목킹할 필요가 없다(react-router/SDK 목만 있으면 jsdom에서 그대로 렌더).

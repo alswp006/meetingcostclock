@@ -131,10 +131,8 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
     // TeamB: 200/300 ≈ 66.67%
     // Sorted by cost: TeamB first
     expect(ranks[0].teamName).toBe("TeamB");
-    expect(ranks[0].sharePercent).toBeGreaterThan(66);
-    expect(ranks[0].sharePercent).toBeLessThan(67);
-    expect(ranks[1].sharePercent).toBeGreaterThan(33);
-    expect(ranks[1].sharePercent).toBeLessThan(34);
+    expect(ranks[0].sharePercent).toBe(67);
+    expect(ranks[1].sharePercent).toBe(33);
   });
 
   // ══════════════════════════════════════════════════════════════════════════════
