@@ -1,11 +1,38 @@
-// @ai-factory:placeholder
-// 배선 선행(wiring-first)이 깐 자리 페이지다 — App.tsx에 `/history`로 이미 연결돼 있다.
-// 이 화면을 담당하는 패킷은 이 파일을 **통째로 교체**하라(위 마커 주석 포함 — 마커가 남으면 산출물로 인정되지 않는다).
+import { useState } from "react";
+import { Spacing, Tab, Top } from "@toss/tds-mobile";
+import { generateHapticFeedback } from "@apps-in-toss/web-framework";
+import { ScreenScaffold } from "@/components/ScreenScaffold";
+import { HistoryList } from "@/components/history/HistoryList";
+import { TeamRanking } from "@/components/history/TeamRanking";
+
+function tickWeak() {
+  try {
+    Promise.resolve(generateHapticFeedback({ type: "tickWeak" })).catch(() => {});
+  } catch {
+    /* WebView 밖에서는 throw — 무시 */
+  }
+}
+
 export default function History() {
+  const [tab, setTab] = useState(0);
+  const select = (i: number) => {
+    if (i !== tab) tickWeak();
+    setTab(i);
+  };
+
   return (
-    <main data-testid="placeholder-history">
-      <h1>기록 ★ 대시보드 화면</h1>
-      <p>이 화면은 준비 중이에요.</p>
-    </main>
+    <ScreenScaffold top={<Top title={<Top.TitleParagraph>기록</Top.TitleParagraph>} />}>
+      <Tab onChange={select}>
+        <Tab.Item selected={tab === 0} onClick={() => select(0)}>
+          회의 기록
+        </Tab.Item>
+        <Tab.Item selected={tab === 1} onClick={() => select(1)}>
+          팀 랭킹
+        </Tab.Item>
+      </Tab>
+      <Spacing size={16} />
+      {tab === 0 ? <HistoryList /> : <TeamRanking />}
+      <Spacing size={120} />
+    </ScreenScaffold>
   );
 }
