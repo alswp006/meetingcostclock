@@ -146,17 +146,17 @@ describe("AC-3: RouteState shape per route path", () => {
 
   it("should define 7 other route paths with null state", async () => {
     const otherRoutes: (keyof Types.RouteState)[] = [
-      "/home",
-      "/timer",
-      "/outcome",
-      "/report",
+      "/",
+      "/meeting",
+      "/wrapup/:id",
+      "/report/:id",
+      "/report/:id/card",
       "/history",
-      "/badges",
-      "/settings",
+      "/challenge",
     ];
 
     expect(otherRoutes).toHaveLength(7);
-    expect(otherRoutes).toContain("/home");
+    expect(otherRoutes).toContain("/");
   });
 });
 

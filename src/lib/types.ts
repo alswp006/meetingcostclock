@@ -1,8 +1,33 @@
-// AC-1: MANDATORY — this file contains ONLY type definitions
-// Zero runtime code (const/let/function/class)
-// Coder: implement all types from spec.md Data Models
+// 타입 정의 전용 파일 — 런타임 코드(const/let/function/class)를 두지 않는다.
+//
+// RouteState 수신 규칙 (/setup의 prefill):
+//   1. useLocation().state as RouteState['/setup'] ?? null 로 받는다.
+//   2. null 확인 후 isMeetingSetupInput 가드를 통과시킨다.
+//   3. 구조 분해(const { prefill } = state as X)는 금지한다.
 
 export type MeetingOutcome = "decided" | "partial" | "none";
+
+export type BadgeId =
+  | "first_free_day"
+  | "streak_3"
+  | "total_5"
+  | "total_10"
+  | "total_20";
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number; // 1부터 시작
+  error?: "corrupted" | "unavailable";
+}
+
+export interface TeamRank {
+  rank: number;
+  teamName: string;
+  totalCost: number;
+  count: number;
+  sharePercent: number;
+}
 
 export interface MeetingSetupInput {
   title: string;
@@ -58,19 +83,55 @@ export interface NoMeetingDay {
 
 export interface EarnedBadge {
   id: string;
-  badgeId: string;
+  badgeId: BadgeId;
   createdAt: string;
   updatedAt: string;
 }
 
-// AC-3: RouteState — /setup has { prefill: MeetingSetupInput } | null, others are null
-export interface RouteState {
+export type SaveResult =
+  | { ok: true }
+  | { ok: false; reason: "quota" | "unknown" | "not_found" };
+
+export type FinalizeResult =
+  | {
+      ok: true;
+      record: MeetingRecord;
+      cancelledNoMeetingDates: string[];
+      autoClosed: null | "elapsed_cap" | "wall_cap";
+    }
+  | { ok: false; reason: "no_active" | "too_short" | "quota" };
+
+export type StaleResult =
+  | { stale: false }
+  | { stale: true; reason: "elapsed_cap" | "wall_cap" };
+
+export type AutoFinalizeResult =
+  | { status: "not_stale" }
+  | { status: "suppressed" }
+  | {
+      status: "done";
+      staleReason: "elapsed_cap" | "wall_cap";
+      result: FinalizeResult;
+      showQuotaToast: boolean;
+    };
+
+export type DeclareResult =
+  | { ok: true; day: NoMeetingDay; newBadges: EarnedBadge[] }
+  | {
+      ok: false;
+      reason: "weekend" | "already_declared" | "has_meeting" | "quota" | "unknown";
+    };
+
+// /setup만 prefill을 받고("같은 설정으로 다시 시작"), 나머지 라우트는 state가 없다.
+export type RouteState = {
+  "/": null;
   "/setup": { prefill: MeetingSetupInput } | null;
-  "/home": null;
-  "/timer": null;
-  "/outcome": null;
-  "/report": null;
+  "/meeting": null;
+  "/wrapup/:id": null;
+  "/report/:id": null;
+  "/report/:id/card": null;
   "/history": null;
-  "/badges": null;
-  "/settings": null;
-}
+  "/challenge": null;
+};
+
+export type RecordRouteParams = { id: string };
