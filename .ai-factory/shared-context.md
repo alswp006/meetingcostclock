@@ -228,8 +228,12 @@ export type RouteState = {
     TossRewardAd.tsx
   hooks/
   lib/
+    __tests__/
     constants.ts
     contract.ts
+    cost.ts
+    format.ts
+    messages.ts
     storage.ts
     types.ts
     utils.ts
@@ -253,6 +257,9 @@ export type RouteState = {
 ### Exports (src/lib/)
 - constants.ts: export const ANNUAL_WORK_HOURS = 2080; export const MAX_DURATION_SEC = 28800; export const MAX_WALL_MS = 43200000; export const MIN_SAVE_SEC = 10; export const HISTORY_PAGE_SIZE = 20; export const RECORDS_MAX = 500; export const OUTCOME_FACTOR =; export const STORAGE_KEY_LAST_SETUP = "mcc:v1:lastSetup"
 - contract.ts: export type Meeting =; export type Record =; export type RouteState =; export type calculateCostFn = (durationMs: number, hourlyRateKrw: number) => number; export type formatDurationFn = (durationMs: number) => string; export type formatPriceFn = (amountKrw: number, opts?:; export type createQueryFn = (opts:; export type saveMeetingFn = (meeting: Meeting) => Promise<void>
+- cost.ts: export interface CalcHourlyResult; export interface CalcWasteResult; export function calcHourly( attendees: number, salaryManwon: number ): CalcHourlyResult; export function calcCost( attendees: number, salaryManwon: number, sec: number ): number; export function calcWaste( record:; export function calculateCost(durationMs: number, hourlyRateKrw: number): number
+- format.ts: export function formatWon(won: number): string; export function formatHMS(seconds: number): string; export function formatMinutes(minutes: number): string; export function formatMonthDay(date: Date): string; export function toLocalDateKey(date: Date): string; export function formatDuration(durationMs: number): string; export function formatPrice(amountKrw: number, opts?:
+- messages.ts: export const QUOTA_TOAST = "저장 공간이 부족해요. 오래된 기록을 삭제해주세요"; export const TOO_SHORT = "10초 미만 회의는 저장되지 않아요"; export const NO_MEETING_CANCELLED = "오늘 회의가 기록되어 '회의 없는 날'이 취소됐어요"; export const AUTO_CLOSED_8H = "8시간이 지나 회의를 자동 종료했어요"; export const AUTO_CLOSED_12H = "12시간이 지나 회의를 자동 종료했어요"; export const RESTART_SAVED = "이전 회의를 저장했어요. 회고는 기록 탭에서 입력할 수 있어요"; export const NO_ACTIVE_MEETING = "진행 중인 회의가 없어요"; export const RECORD_DELETED = "기록을 삭제했어요"
 - storage.ts: export function getItem<T>(key: string): T | null; export function setItem<T>(key: string, value: T): void; export function removeItem(key: string): void
 - types.ts: export type MeetingOutcome = "decided" | "partial" | "none"; export type BadgeId = | "first_free_day" | "streak_3" | "total_5" | "total_10" | "total_20"; export interface Page<T>; export interface TeamRank; export interface MeetingSetupInput; export interface MeetingSetup extends MeetingSetupInput; export interface ActiveMeeting; export interface MeetingRecord
 - utils.ts: export function cn(...classes: (string | boolean | undefined | null)[]): string; export function formatNumber(n: number): string; export function formatCurrency(n: number, currency = 'KRW'): string
@@ -272,85 +279,11 @@ export type RouteState = {
 - SummaryHero.tsx: SummaryHero
 - TossPurchase.tsx: TossPurchase
 - TossRewardAd.tsx: TossRewardAd
+
+### Module Dependencies (import graph)
+  lib/cost.ts → imports: lib/constants, lib/types
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
 
 ## Already Implemented (do NOT duplicate or overwrite)
 - 0001: 엔티티 타입, RouteState 계약, 전역 상수 (files: src/lib/types.ts, src/lib/constants.ts)
-
-## Available exports from existing files
-// src/App.tsx
-export default function App() {
-
-// src/components/AdSlot.tsx
-export function AdSlot({ adGroupId, className, variant, theme }: AdSlotProps) {
-
-// src/components/Amount.tsx
-export function Amount({
-
-// src/components/BottomCTA.tsx
-export function SubmitFooter({
-export function ButtonStack({
-
-// src/components/Card.tsx
-export function Card({
-
-// src/components/CountUp.tsx
-export function CountUp({
-
-// src/components/FloatingTabBar.tsx
-export type TabItem = {
-export function FloatingTabBar({ items }: { items: TabItem[] }) {
-
-// src/components/MiniBar.tsx
-export function MiniBar({
-
-// src/components/PageShell.tsx
-export function PageShell({ children, style }: { children: ReactNode; style?: CSSProperties }) {
-
-// src/components/ScreenScaffold.tsx
-export function ScreenScaffold({
-
-// src/components/Sparkline.tsx
-export function Sparkline({
-
-// src/components/StateView.tsx
-export function EmptyState({
-export function LoadingState({
-
-// src/components/SummaryHero.tsx
-export function SummaryHero({
-
-// src/components/TossPurchase.tsx
-export interface TossPurchaseResult {
-export function TossPurchase({
-
-// src/components/TossRewardAd.tsx
-export function TossRewardAd({
-
-// src/lib/constants.ts
-export const ANNUAL_WORK_HOURS = 2080;
-export const MAX_DURATION_SEC = 28800;
-export const MAX_WALL_MS = 43200000;
-export const MIN_SAVE_SEC = 10;
-export const HISTORY_PAGE_SIZE = 20;
-export const RECORDS_MAX = 500;
-export const OUTCOME_FACTOR = {
-export const STORAGE_KEY_LAST_SETUP = "mcc:v1:lastSetup";
-export const STORAGE_KEY_ACTIVE = "mcc:v1:active";
-export const STORAGE_KEY_RECORDS = "mcc:v1:records";
-
-// src/lib/contract.ts
-export type Meeting = { id: string; startedAt: string; state: 'active' | 'paused' | 'finalized'; pausedMs: number; hourlyRate: number; timezone: string };
-export type Record = { id: string; meetingId: string; date: string; durationMs: number; costKrw: number; notes?: string };
-export type RouteState = { screen: 'home' | 'setup' | 'meeting' | 'wrapu
-
-## Memory Index (자동 학습 — 힌트로만 사용, 실제 코드 확인 필수)
-
-Available topics: deploy(4), general(13), testing(2), ui(3)
-
-Key lessons (verify against actual code before applying):
-- [general] 파일 생성 전 디렉토리 구조 확인 — mkdir -p로 경로 보장 (60% · 타 앱 1회 — 맹신 금지)
-- [general] 화면·라우팅 등 소비자 모듈은 그것이 import하는 생산자 모듈이 병합된 뒤에만 병합하고, 순서를 지킬 수 없으면 소비자 병합과 동시에 최소 플레이스홀더를 만들어 매 병합 직후 타입체크와 빌드가 항상 통과하도록 유지하라. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 전역 라우팅·탭바·Provider 배선은 개별 화면보다 먼저(초반 20% 안에) 완료하고 미구현 화면은 스텁 라우트로 연결해, 시간 예산이 소진돼도 앱이 항상 실행 가능한 상태를 유지하라. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 저장·데이터 접근 등 기반 계층 패킷은 이를 import 하는 화면 패킷보다 반드시 먼저 완료·병합하고, 미완료면 상위 화면 패킷 병합을 차단하라 — 빈 기반 모듈 하나가 전 라우트 스모크를 무너뜨린다. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 외부에서 들어온 모든 값(라우터 state, 로컬 저장소, 부분 입력 폼)은 사용 직전에 배열·객체 기본값으로 정규화하고, 테이블/맵 조회 결과는 존재 확인 후에만 하위 속성이나 length에 접근하라. (60% · 타 앱 1회 — 맹신 금지)
+- 0002: 비용 계산, 표시 포맷, 사용자 문구 순수 함수 (files: src/lib/cost.ts, src/lib/format.ts, src/lib/messages.ts, src/lib/__tests__/cost-format.test.ts)
