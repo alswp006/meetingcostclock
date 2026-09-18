@@ -6,6 +6,7 @@ import { STORAGE_KEY_RECORDS } from "@/lib/constants";
 import type { DeclareResult, EarnedBadge, NoMeetingDay } from "@/lib/types";
 
 export { isWeekday, canDeclareToday } from "@/lib/challengeRules";
+export { rankTeams, getTeamRanking } from "@/lib/ranking";
 
 function restore(key: string, raw: string | null): void {
   try {

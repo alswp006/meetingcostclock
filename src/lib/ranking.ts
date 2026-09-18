@@ -25,3 +25,40 @@ export function rankTeams(records: MeetingRecord[], now: Date): TeamRank[] {
       sharePercent: sum > 0 ? (t.totalCost / sum) * 100 : 0,
     }));
 }
+
+/** contract.ts getTeamRankingFn 입력 — contract Record + 앱 MeetingRecord 필드를 모두 허용한다. */
+export type RankableRecord = {
+  userId?: string;
+  teamName?: string;
+  durationMs?: number;
+  durationSec?: number;
+};
+
+/** 기록을 userId(없으면 teamName)별로 합산해 회의 시간(분) 내림차순으로 순위를 매긴다. 동률은 같은 순위. */
+export function getTeamRanking(
+  records: RankableRecord[],
+): { userId: string; totalMinutes: number; rank: number }[] {
+  const list = Array.isArray(records) ? records : [];
+  const totals = new Map<string, number>();
+  for (const r of list) {
+    if (!r) continue;
+    const id = r.userId || r.teamName || "unknown";
+    const ms =
+      Number.isFinite(r.durationMs) ? (r.durationMs as number)
+      : Number.isFinite(r.durationSec) ? (r.durationSec as number) * 1000
+      : 0;
+    if (ms <= 0) continue;
+    totals.set(id, (totals.get(id) ?? 0) + ms);
+  }
+  const sorted = [...totals.entries()]
+    .map(([userId, ms]) => ({ userId, totalMinutes: Math.round(ms / 60000) }))
+    .sort((a, b) => b.totalMinutes - a.totalMinutes || a.userId.localeCompare(b.userId));
+  let prev = -1;
+  let prevRank = 0;
+  return sorted.map((t, i) => {
+    const rank = t.totalMinutes === prev ? prevRank : i + 1;
+    prev = t.totalMinutes;
+    prevRank = rank;
+    return { ...t, rank };
+  });
+}

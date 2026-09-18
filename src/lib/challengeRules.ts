@@ -1,4 +1,5 @@
 import type { BadgeId, MeetingRecord } from "@/lib/types";
+import { localDateKeysBetween } from "@/lib/meetingTime";
 
 export function isWeekday(date: Date): boolean {
   const d = date.getDay();
@@ -7,17 +8,18 @@ export function isWeekday(date: Date): boolean {
 
 /** 로컬 날짜 YYYY-MM-DD */
 export function toDateKey(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
+  return localDateKeysBetween(d, d)[0] ?? "";
 }
 
 export function hasMeetingOn(records: MeetingRecord[], date: Date, hasActive: boolean): boolean {
   if (hasActive) return true;
   const key = toDateKey(date);
   return records.some((r) => {
-    const t = new Date(r?.endedAt);
-    return !Number.isNaN(t.getTime()) && toDateKey(t) === key;
+    const start = new Date(r?.startedAt);
+    const end = new Date(r?.endedAt);
+    if (Number.isNaN(end.getTime())) return false;
+    const from = Number.isNaN(start.getTime()) ? end : start;
+    return localDateKeysBetween(from, end).includes(key);
   });
 }
 

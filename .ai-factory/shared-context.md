@@ -314,6 +314,7 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0017: [부가] S7 기록 페이지 (/history: 목록 탭, 팀 랭킹 탭, 삭제, 배너) (files: src/components/history/HistoryList.tsx, src/components/history/TeamRanking.tsx, src/pages/History.tsx, src/pages/__tests__/History.test.tsx)
 - 0018: [부가] S8 챌린지 페이지 (/challenge: 회의 없는 날 선언, 연속 기록, 배지) (files: src/pages/Challenge.tsx, src/pages/__tests__/Challenge.test.tsx)
 - 0019: App.tsx 라우팅, FloatingTabBar, ErrorBoundary, StaleGate 배선 (files: src/App.tsx, src/components/StaleGate.tsx, src/components/ErrorBoundary.tsx)
+- 0020: 검수 준수 정적 테스트와 핵심 여정 E2E (files: src/__tests__/compliance.test.ts, src/__tests__/journey.e2e.test.tsx)
 
 ## Available exports from existing files
 // src/App.tsx
