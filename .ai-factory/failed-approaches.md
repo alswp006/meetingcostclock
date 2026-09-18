@@ -44,3 +44,16 @@
  src/components/meeting/TimerDisplay.tsx            | 59 ++++++++++++++
  .../meeting/__tests__/TimerDisplay.test.tsx        | 59 ++++++++++++++
  4 files change
+
+## [부가] S6 공유 카드 페이지 (/report/:id/card: 광고 게이트, 이미지 저장, 텍스트 공유) — fix loop 2026-09-18T17:58:36.602Z
+- 시도 횟수: 1
+- 트리아지: trivial (1 minor tsc errors)
+- 에러 변화:
+  Attempt 1: initial errors — tsc:1|lint:0|test:0
+- 비용: $0.2522
+- 수정된 파일:
+ .ai-factory/shared-context.md       | 92 ++++++++++++++++++++++++++++++++++++-
+ src/__tests__/packet-0016.test.ts   |  2 +-
+ src/components/card/CardActions.tsx | 77 +++++++++++++++++++++++++++++++
+ src/pages/Card.tsx                  | 91 +++++++++++++++++++++++++++++++++---
+ 4 files changed, 253 

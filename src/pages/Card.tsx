@@ -1,11 +1,88 @@
-// @ai-factory:placeholder
-// 배선 선행(wiring-first)이 깐 자리 페이지다 — App.tsx에 `/report/:id/card`로 이미 연결돼 있다.
-// 이 화면을 담당하는 패킷은 이 파일을 **통째로 교체**하라(위 마커 주석 포함 — 마커가 남으면 산출물로 인정되지 않는다).
-export default function Card() {
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
+import { ScreenScaffold } from "@/components/ScreenScaffold";
+import { Card as CardBox } from "@/components/Card";
+import { RecordNotFound } from "@/components/RecordNotFound";
+import { TossRewardAd } from "@/components/TossRewardAd";
+import { CardActions } from "@/components/card/CardActions";
+import { useRecordParam } from "@/hooks/useRecordParam";
+import { useToastQueue } from "@/hooks/useToastQueue";
+import { renderShareCard } from "@/lib/shareCard";
+import { updateRecord } from "@/lib/storage";
+import type { MeetingRecord } from "@/lib/types";
+
+function CardView({ record, onToast }: { record: MeetingRecord; onToast: (m: string) => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [failed, setFailed] = useState(false);
+
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    let ok = false;
+    try {
+      ok = canvas ? renderShareCard(canvas, record).ok : false;
+    } catch {
+      ok = false;
+    }
+    setFailed(!ok);
+  }, [record]);
+
+  useEffect(() => {
+    draw();
+  }, [draw]);
+
   return (
-    <main data-testid="placeholder-card">
-      <h1>공유 카드 ★ 결과 화면</h1>
-      <p>이 화면은 준비 중이에요.</p>
-    </main>
+    <>
+      <CardBox testId="share-card">
+        <canvas ref={canvasRef} style={{ width: "100%", display: failed ? "none" : "block" }} />
+        {failed && (
+          <>
+            <Paragraph.Text typography="t5">카드를 만들지 못했어요</Paragraph.Text>
+            <Spacing size={12} />
+            <Button variant="weak" display="block" onClick={draw}>
+              다시 시도
+            </Button>
+          </>
+        )}
+      </CardBox>
+      <Spacing size={24} />
+      <CardActions record={record} canvasRef={canvasRef} onToast={onToast} />
+    </>
+  );
+}
+
+export default function Card() {
+  const record = useRecordParam();
+  const toast = useToastQueue();
+  const [unlocked, setUnlocked] = useState(false);
+
+  if (!record) return <RecordNotFound />;
+
+  const open = record.shareUnlocked || unlocked;
+  const onRewarded = () => {
+    try {
+      updateRecord(record.id, { shareUnlocked: true, updatedAt: new Date().toISOString() });
+    } catch {
+      /* 저장 실패해도 이번 화면에서는 열어 둔다 */
+    }
+    setUnlocked(true);
+  };
+
+  return (
+    <ScreenScaffold top={<Top title={<Top.TitleParagraph>공유 카드</Top.TitleParagraph>} />}>
+      <Spacing size={16} />
+      {open ? (
+        <CardView record={record} onToast={toast.push} />
+      ) : (
+        <TossRewardAd
+          slotId={import.meta.env.VITE_TOSS_AD_SLOT_ID ?? "share-card"}
+          description="광고를 보면 공유 카드를 만들 수 있어요"
+          buttonText="광고 보고 카드 만들기"
+          onRewarded={onRewarded}
+        >
+          <CardView record={record} onToast={toast.push} />
+        </TossRewardAd>
+      )}
+      <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
+    </ScreenScaffold>
   );
 }
