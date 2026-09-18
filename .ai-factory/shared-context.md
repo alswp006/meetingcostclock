@@ -77,9 +77,135 @@ export type declareNoMeetingDayFn = (date: string) => Promise<void>;
 
 ## Shared Types Contract (IMPORT these, do NOT redefine)
 ```typescript
-// Domain types — add your app-specific types here
-export {};
+// 타입 정의 전용 파일 — 런타임 코드(const/let/function/class)를 두지 않는다.
+//
+// RouteState 수신 규칙 (/setup의 prefill):
+//   1. useLocation().state as RouteState['/setup'] ?? null 로 받는다.
+//   2. null 확인 후 isMeetingSetupInput 가드를 통과시킨다.
+//   3. 구조 분해(const { prefill } = state as X)는 금지한다.
 
+export type MeetingOutcome = "decided" | "partial" | "none";
+
+export type BadgeId =
+  | "first_free_day"
+  | "streak_3"
+  | "total_5"
+  | "total_10"
+  | "total_20";
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number; // 1부터 시작
+  error?: "corrupted" | "unavailable";
+}
+
+export interface TeamRank {
+  rank: number;
+  teamName: string;
+  totalCost: number;
+  count: number;
+  sharePercent: number;
+}
+
+export interface MeetingSetupInput {
+  title: string;
+  teamName: string;
+  attendees: number;
+  annualSalaryManwon: number;
+  plannedMinutes: number;
+}
+
+export interface MeetingSetup extends MeetingSetupInput {
+  id: "lastSetup";
+  createdAt: string;
+  updatedAt: string;
+}
+
+// AC-2: ActiveMeeting.startedAt must be number (milliseconds)
+export interface ActiveMeeting {
+  id: string;
+  setup: MeetingSetupInput;
+  startedAt: number; // milliseconds
+  pausedAt: number | null;
+  totalPausedMs: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// AC-2: MeetingRecord.startedAt must be string (ISO datetime), outcome must be MeetingOutcome | null
+export interface MeetingRecord {
+  id: string;
+  title: string;
+  teamName: string;
+  attendees: number;
+  annualSalaryManwon: number;
+  plannedMinutes: number;
+  startedAt: string; // ISO datetime
+  endedAt: string;
+  durationSec: number;
+  totalCost: number;
+  outcome: MeetingOutcome | null;
+  wasteCost: number | null;
+  reportUnlocked: boolean;
+  shareUnlocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NoMeetingDay {
+  id: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EarnedBadge {
+  id: string;
+  badgeId: BadgeId;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SaveResult =
+  | { ok: true }
+  | { ok: false; reason: "quota" | "unknown" | "not_found" };
+
+export type FinalizeResult =
+  | {
+      ok: true;
+      record: MeetingRecord;
+      cancelledNoMeetingDates: string[];
+      autoClosed: null | "elapsed_cap" | "wall_cap";
+    }
+  | { ok: false; reason: "no_active" | "too_short" | "quota" };
+
+export type StaleResult =
+  | { stale: false }
+  | { stale: true; reason: "elapsed_cap" | "wall_cap" };
+
+export type AutoFinalizeResult =
+  | { status: "not_stale" }
+  | { status: "suppressed" }
+  | {
+      status: "done";
+      staleReason: "elapsed_cap" | "wall_cap";
+      result: FinalizeResult;
+      showQuotaToast: boolean;
+    };
+
+export type DeclareResult =
+  | { ok: true; day: NoMeetingDay; newBadges: EarnedBadge[] }
+  | {
+      ok: false;
+      reason: "weekend" | "already_declared" | "has_meeting" | "quota" | "unknown";
+    };
+
+// /setup만 prefill을 받고("같은 설정으로 다시 시작"), 나머지 라우트는 state가 없다.
+export type RouteState = {
+  "/": null;
+  "/setup": { prefill: Me
+// ...truncated
 ```
 
 ## Existing Codebase (import and use these — do NOT recreate)
@@ -102,6 +228,8 @@ export {};
     TossRewardAd.tsx
   hooks/
   lib/
+    constants.ts
+    contract.ts
     storage.ts
     types.ts
     utils.ts
@@ -123,7 +251,10 @@ export {};
   vite-env.d.ts
 
 ### Exports (src/lib/)
+- constants.ts: export const ANNUAL_WORK_HOURS = 2080; export const MAX_DURATION_SEC = 28800; export const MAX_WALL_MS = 43200000; export const MIN_SAVE_SEC = 10; export const HISTORY_PAGE_SIZE = 20; export const RECORDS_MAX = 500; export const OUTCOME_FACTOR =; export const STORAGE_KEY_LAST_SETUP = "mcc:v1:lastSetup"
+- contract.ts: export type Meeting =; export type Record =; export type RouteState =; export type calculateCostFn = (durationMs: number, hourlyRateKrw: number) => number; export type formatDurationFn = (durationMs: number) => string; export type formatPriceFn = (amountKrw: number, opts?:; export type createQueryFn = (opts:; export type saveMeetingFn = (meeting: Meeting) => Promise<void>
 - storage.ts: export function getItem<T>(key: string): T | null; export function setItem<T>(key: string, value: T): void; export function removeItem(key: string): void
+- types.ts: export type MeetingOutcome = "decided" | "partial" | "none"; export type BadgeId = | "first_free_day" | "streak_3" | "total_5" | "total_10" | "total_20"; export interface Page<T>; export interface TeamRank; export interface MeetingSetupInput; export interface MeetingSetup extends MeetingSetupInput; export interface ActiveMeeting; export interface MeetingRecord
 - utils.ts: export function cn(...classes: (string | boolean | undefined | null)[]): string; export function formatNumber(n: number): string; export function formatCurrency(n: number, currency = 'KRW'): string
 
 ### Components (src/components/)
@@ -143,72 +274,5 @@ export {};
 - TossRewardAd.tsx: TossRewardAd
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
 
-## Available exports from existing files
-// src/App.tsx
-export default function App() {
-
-// src/components/AdSlot.tsx
-export function AdSlot({ adGroupId, className, variant, theme }: AdSlotProps) {
-
-// src/components/Amount.tsx
-export function Amount({
-
-// src/components/BottomCTA.tsx
-export function SubmitFooter({
-export function ButtonStack({
-
-// src/components/Card.tsx
-export function Card({
-
-// src/components/CountUp.tsx
-export function CountUp({
-
-// src/components/FloatingTabBar.tsx
-export type TabItem = {
-export function FloatingTabBar({ items }: { items: TabItem[] }) {
-
-// src/components/MiniBar.tsx
-export function MiniBar({
-
-// src/components/PageShell.tsx
-export function PageShell({ children, style }: { children: ReactNode; style?: CSSProperties }) {
-
-// src/components/ScreenScaffold.tsx
-export function ScreenScaffold({
-
-// src/components/Sparkline.tsx
-export function Sparkline({
-
-// src/components/StateView.tsx
-export function EmptyState({
-export function LoadingState({
-
-// src/components/SummaryHero.tsx
-export function SummaryHero({
-
-// src/components/TossPurchase.tsx
-export interface TossPurchaseResult {
-export function TossPurchase({
-
-// src/components/TossRewardAd.tsx
-export function TossRewardAd({
-
-// src/lib/contract.ts
-export type Meeting = { id: string; startedAt: string; state: 'active' | 'paused' | 'finalized'; pausedMs: number; hourlyRate: number; timezone: string };
-export type Record = { id: string; meetingId: string; date: string; durationMs: number; costKrw: number; notes?: string };
-export type RouteState = { screen: 'home' | 'setup' | 'meeting' | 'wrapup' | 'report' | 'card' | 'history' | 'challenge'; recordId?: string };
-export type calculateCostFn = (durationMs: number, hourlyRateKrw: number) => number;
-export type formatDurationFn = (durationMs: number) => string;
-export type formatPriceFn = (amountKrw: number, opts?: { compact?: boolean }) => string;
-export type createQueryFn = (opts: { meetingIds?: string[]; dateFrom?: string; dateTo?: string; limit?: number; offset?: number
-
-## Memory Index (자동 학습 — 힌트로만 사용, 실제 코드 확인 필수)
-
-Available topics: deploy(4), general(13), testing(2), ui(3)
-
-Key lessons (verify against actual code before applying):
-- [general] 파일 생성 전 디렉토리 구조 확인 — mkdir -p로 경로 보장 (60% · 타 앱 1회 — 맹신 금지)
-- [general] 화면·라우팅 등 소비자 모듈은 그것이 import하는 생산자 모듈이 병합된 뒤에만 병합하고, 순서를 지킬 수 없으면 소비자 병합과 동시에 최소 플레이스홀더를 만들어 매 병합 직후 타입체크와 빌드가 항상 통과하도록 유지하라. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 전역 라우팅·탭바·Provider 배선은 개별 화면보다 먼저(초반 20% 안에) 완료하고 미구현 화면은 스텁 라우트로 연결해, 시간 예산이 소진돼도 앱이 항상 실행 가능한 상태를 유지하라. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 저장·데이터 접근 등 기반 계층 패킷은 이를 import 하는 화면 패킷보다 반드시 먼저 완료·병합하고, 미완료면 상위 화면 패킷 병합을 차단하라 — 빈 기반 모듈 하나가 전 라우트 스모크를 무너뜨린다. (60% · 타 앱 1회 — 맹신 금지)
-- [general] 외부에서 들어온 모든 값(라우터 state, 로컬 저장소, 부분 입력 폼)은 사용 직전에 배열·객체 기본값으로 정규화하고, 테이블/맵 조회 결과는 존재 확인 후에만 하위 속성이나 length에 접근하라. (60% · 타 앱 1회 — 맹신 금지)
+## Already Implemented (do NOT duplicate or overwrite)
+- 0001: 엔티티 타입, RouteState 계약, 전역 상수 (files: src/lib/types.ts, src/lib/constants.ts)
