@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Asset, BottomSheet, Button, ListRow, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
+import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
 import { SummaryHero } from "@/components/SummaryHero";
-import { SubmitFooter } from "@/components/BottomCTA";
 import { useToastQueue } from "@/hooks/useToastQueue";
 import { canDeclareToday, declareNoMeetingDay } from "@/lib/challenge";
 import { hasMeetingOn, toDateKey, trailingStreak } from "@/lib/challengeRules";
@@ -14,7 +14,7 @@ import type { BadgeId, EarnedBadge, NoMeetingDay } from "@/lib/types";
 
 const BADGES: { id: BadgeId; name: string; desc: string; icon: string }[] = [
   { id: "first_free_day", name: "첫 회의 없는 날", desc: "처음 회의 없는 날을 선언했어요", icon: "icon-check-circle-mono" },
-  { id: "streak_3", name: "3일 연속", desc: "평일 3일 연속으로 선언했어요", icon: "icon-calendar-mono" },
+  { id: "streak_3", name: "3일 연속", desc: "평일 3일 연속으로 선언했어요", icon: "icon-calendar-check-mono" },
   { id: "total_5", name: "누적 5일", desc: "회의 없는 날을 5일 선언했어요", icon: "icon-star-mono" },
   { id: "total_10", name: "누적 10일", desc: "회의 없는 날을 10일 선언했어요", icon: "icon-star-mono" },
   { id: "total_20", name: "누적 20일", desc: "회의 없는 날을 20일 선언했어요", icon: "icon-star-mono" },
@@ -64,6 +64,11 @@ export default function Challenge() {
 
   const declare = () => {
     if (!can) return;
+    try {
+      Promise.resolve(generateHapticFeedback({ type: "success" })).catch(() => {});
+    } catch {
+      /* WebView 밖에서는 throw — 무시 */
+    }
     let res;
     try {
       res = declareNoMeetingDay(new Date());
@@ -92,12 +97,22 @@ export default function Challenge() {
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>회의 없는 날 챌린지</Top.TitleParagraph>} />}
-      bottom={
-        <SubmitFooter label={declared ? "오늘은 선언했어요" : "오늘은 회의 없는 날"} disabled={!can} onClick={declare} />
-      }
     >
       <Spacing size={16} />
       <SummaryHero label="연속 회의 없는 날" value={<Paragraph.Text typography="t1">{`${streak}일`}</Paragraph.Text>} caption={`이번 달 ${monthDays.length}일 선언했어요`} testId="challenge-hero" />
+      <Spacing size={16} />
+      {/* 탭-루트: 하단은 FloatingTabBar 자리 — 1차 CTA는 히어로 아래 전체폭 버튼으로 둔다 */}
+      <Button size="large" display="block" disabled={!can} onClick={declare}>
+        {declared ? "오늘은 선언했어요" : "오늘은 회의 없는 날"}
+      </Button>
+      {reason ? (
+        <>
+          <Spacing size={8} />
+          <Paragraph.Text typography="st6" color="secondary">
+            {reason}
+          </Paragraph.Text>
+        </>
+      ) : null}
       <Spacing size={24} />
       <Paragraph.Text typography="t5">배지</Paragraph.Text>
       <Spacing size={8} />
@@ -123,15 +138,7 @@ export default function Challenge() {
       ) : (
         monthDays.map((d) => <ListRow key={d.id} contents={<ListRow.Texts type="1RowTypeA" top={d.date} />} />)
       )}
-      {reason ? (
-        <>
-          <Spacing size={16} />
-          <Paragraph.Text typography="st6" color="secondary">
-            {reason}
-          </Paragraph.Text>
-        </>
-      ) : null}
-      <Spacing size={80} />
+      <Spacing size={120} />
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} header={<BottomSheet.Header>새 배지를 받았어요</BottomSheet.Header>}>
         {newBadges.map((b) => {
           const m = badgeMeta(b.badgeId);

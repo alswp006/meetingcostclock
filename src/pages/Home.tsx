@@ -7,7 +7,6 @@ import { SummaryHero } from "@/components/SummaryHero";
 import { Card } from "@/components/Card";
 import { CountUp } from "@/components/CountUp";
 import { EmptyState } from "@/components/StateView";
-import { SubmitFooter } from "@/components/BottomCTA";
 import { calcCost } from "@/lib/cost";
 import { formatWon } from "@/lib/format";
 import { getElapsedSec } from "@/lib/meetingTime";
@@ -71,13 +70,18 @@ export default function Home() {
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>회의비용 시계</Top.TitleParagraph>} />}
-      bottom={
-        <SubmitFooter
-          label={active ? "진행 중인 회의로 이동" : "새 회의 시작"}
-          onClick={() => { navigate(active ? "/meeting" : "/setup"); }}
-        />
-      }
     >
+      {/* 탭-루트: 하단은 FloatingTabBar 자리 — 1차 CTA는 본문 상단 전체폭 버튼으로 둔다 */}
+      <Button
+        size="large"
+        display="block"
+        onClick={() => {
+          fireHaptic("success");
+          navigate(active ? "/meeting" : "/setup");
+        }}
+      >
+        {active ? "진행 중인 회의로 이동" : "새 회의 시작"}
+      </Button>
       <Spacing size={16} />
       {active && (
         <>
