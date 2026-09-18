@@ -7,7 +7,7 @@ import { useActiveMeeting } from "@/hooks/useActiveMeeting";
 import { useToastQueue } from "@/hooks/useToastQueue";
 import { loadLastSetup } from "@/lib/storage";
 import { isMeetingSetupInput } from "@/lib/schema";
-import { QUOTA_TOAST, RESTART_SAVED } from "@/lib/messages";
+import { NO_MEETING_CANCELLED, QUOTA_TOAST, RESTART_SAVED, TOO_SHORT } from "@/lib/messages";
 import type { MeetingSetupInput, RouteState } from "@/lib/types";
 
 function pickInitial(state: RouteState["/setup"]): MeetingSetupInput | null {
@@ -42,11 +42,12 @@ export default function Setup() {
 
   const handleRestart = () => {
     const r = finalize();
-    if (!r.ok && r.reason === "quota") {
-      toast.push(QUOTA_TOAST);
+    if (!r.ok) {
+      toast.push(r.reason === "quota" ? QUOTA_TOAST : r.reason === "too_short" ? TOO_SHORT : "회의를 저장하지 못했어요. 잠시 후 다시 시도해 주세요");
       return;
     }
     toast.push(RESTART_SAVED);
+    if (r.noMeetingCancelled) toast.push(NO_MEETING_CANCELLED);
   };
 
   return (
