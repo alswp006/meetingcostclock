@@ -1,58 +1,27 @@
-/**
- * F1: 표시 포맷 함수들
- * SPEC: 표시 규칙
- * - 금액: toLocaleString('ko-KR') + "원"
- * - 시간: HH:MM:SS 형식
- * - 날짜: 로컬 시간 기준 YYYY-MM-DD
- */
+const pad2 = (n: number): string => String(n).padStart(2, "0");
 
-/**
- * 금액을 한국 원화 형식으로 표시
- * @param won - 원화 금액
- * @returns "원" 단위 문자열 (예: "90,144원")
- */
+/** 90144 → "90,144원" */
 export function formatWon(won: number): string {
-  // TODO: 구현
-  return "";
+  return `${Math.floor(won).toLocaleString("ko-KR")}원`;
 }
 
-/**
- * 초를 HH:MM:SS 형식으로 표시
- * @param seconds - 초 단위 시간
- * @returns "HH:MM:SS" 형식 문자열 (예: "00:45:00")
- */
+/** 2700 → "00:45:00" */
 export function formatHMS(seconds: number): string {
-  // TODO: 구현
-  return "";
+  const s = Math.max(0, Math.floor(seconds));
+  return `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}`;
 }
 
-/**
- * 분을 "분" 단위 문자열로 표시
- * @param minutes - 분 단위
- * @returns "분" 단위 문자열 (예: "30분")
- */
+/** 45 → "45분" */
 export function formatMinutes(minutes: number): string {
-  // TODO: 구현
-  return "";
+  return `${Math.floor(minutes)}분`;
 }
 
-/**
- * Date를 MM-DD 형식으로 표시
- * @param date - Date 객체
- * @returns "MM-DD" 형식 문자열
- */
+/** Date → "MM-DD" (로컬) */
 export function formatMonthDay(date: Date): string {
-  // TODO: 구현
-  return "";
+  return `${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-/**
- * 로컬 날짜를 YYYY-MM-DD 키로 변환
- * 주의: 로컬 시간 기준이며, toISOString() 호출 금지 (AC-5)
- * @param date - Date 객체
- * @returns "YYYY-MM-DD" 형식 문자열
- */
+/** 로컬 날짜 기준 "YYYY-MM-DD" (toISOString 사용 금지) */
 export function toLocalDateKey(date: Date): string {
-  // TODO: 구현 (toISOString 호출 0회)
-  return "";
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
