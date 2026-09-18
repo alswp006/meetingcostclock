@@ -33,8 +33,8 @@ export function mockTds() {
       React.createElement("button", { onClick, disabled: disabled || loading || undefined, "data-loading": loading ? "true" : undefined, ...props }, children),
 
     ListRow: Object.assign(
-      ({ children, onClick, ...props }: any) =>
-        React.createElement("div", { onClick, role: "listitem", ...props }, children),
+      ({ children, contents, left, right, onClick, ...props }: any) =>
+        React.createElement("div", { onClick, role: "listitem", ...props }, left, contents, children, right),
       {
         Text: ({ children }: any) => React.createElement("span", null, children),
         Texts: ({ top, bottom, type }: any) =>
@@ -302,7 +302,9 @@ export function mockTossRewardAd() {
 // ── react-router-dom ──
 // Preserve actual router + override useNavigate for assertion.
 export function mockRouter() {
-  vi.mock("react-router-dom", async () => {
+  // vi.doMock은 hoist되지 않는다 — vi.mock을 함수 안에 두면 파일 최상단으로 끌어올려져
+  // mockRouter()를 부르지 않는 테스트에서도 useNavigate/useLocation이 스텁이 된다.
+  vi.doMock("react-router-dom", async () => {
     const actual = await vi.importActual<typeof import("react-router-dom")>(
       "react-router-dom",
     );
