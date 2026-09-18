@@ -2,15 +2,18 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
-import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { mockTds, mockAppsInToss } from "@/__tests__/__helpers__/mocks";
+
+// Set up mocks BEFORE importing modules that use them (hoisted at module load time)
+mockTds();
+mockAppsInToss();
+
+// Import SDK modules AFTER mocks are registered
+import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { failSetItemOnNth } from "@/lib/__tests__/failSetItemOnNth";
 import { QUOTA_TOAST } from "@/lib/messages";
 import Wrapup from "@/pages/Wrapup";
 import type { MeetingRecord } from "@/lib/types";
-
-mockTds();
-mockAppsInToss();
 
 // 5명 · 연봉 5,000만 원 · 예정 30분 · 실제 45분 → 총비용 90,144원, 초과 30,048원
 const RECORD: MeetingRecord = {
