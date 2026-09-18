@@ -31,3 +31,4 @@ export const STORAGE_KEY_ACTIVE = "mcc:v1:active";
 export const STORAGE_KEY_RECORDS = "mcc:v1:records";
 export const STORAGE_KEY_NO_MEETING_DAYS = "mcc:v1:noMeetingDays";
 export const STORAGE_KEY_BADGES = "mcc:v1:badges";
+export const STORAGE_KEY_MEETINGS = "mcc:v1:meetings";
