@@ -46,7 +46,7 @@ function makeRecord(
     durationSec: 3600,
     totalCost,
     outcome: "decided",
-    wasteCost: null,
+    wasteCost: 0,
     reportUnlocked: false,
     shareUnlocked: false,
     createdAt: now,
@@ -100,7 +100,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
     const augustRecord = makeRecord("TeamA", 80000, "2026-08-25T09:00:00Z");
 
     const records = [septemberRecord1, septemberRecord2, septemberRecord3, augustRecord];
-    const now = new Date("2026-09-30T23:59:59Z");
+    const now = new Date("2026-09-25T12:00:00Z");
 
     const ranks = rankTeams(records, now);
 
@@ -122,17 +122,19 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
       makeRecord("TeamA", 100, "2026-09-01T10:00:00Z"),
       makeRecord("TeamB", 200, "2026-09-01T10:00:00Z"),
     ];
-    const now = new Date("2026-09-30T23:59:59Z");
+    const now = new Date("2026-09-25T12:00:00Z");
 
     const ranks = rankTeams(records, now);
 
     // Total: 300 (100 + 200)
     // TeamA: 100/300 ≈ 33.33%
     // TeamB: 200/300 ≈ 66.67%
-    expect(ranks[0].sharePercent).toBeGreaterThan(33);
-    expect(ranks[0].sharePercent).toBeLessThan(34);
-    expect(ranks[1].sharePercent).toBeGreaterThan(66);
-    expect(ranks[1].sharePercent).toBeLessThan(67);
+    // Sorted by cost: TeamB first
+    expect(ranks[0].teamName).toBe("TeamB");
+    expect(ranks[0].sharePercent).toBeGreaterThan(66);
+    expect(ranks[0].sharePercent).toBeLessThan(67);
+    expect(ranks[1].sharePercent).toBeGreaterThan(33);
+    expect(ranks[1].sharePercent).toBeLessThan(34);
   });
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -140,8 +142,8 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
   //       반환하고 저장소를 바꾸지 않는다
   // ══════════════════════════════════════════════════════════════════════════════
   it("AC-2[P0]: should reject Saturday with reason='weekend' and not modify storage", () => {
-    // 2026-09-20 is a Saturday (verified: getDay() = 6)
-    const saturday = new Date("2026-09-20T12:00:00Z");
+    // 2026-09-19 is a Saturday (verified: getDay() = 6)
+    const saturday = new Date("2026-09-19T12:00:00Z");
     expect(saturday.getDay()).toBe(6); // Sanity check: Saturday
 
     // Seed initial state
@@ -160,8 +162,8 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
   });
 
   it("AC-2[P0]: should reject Sunday with reason='weekend'", () => {
-    // 2026-09-21 is a Sunday (verified: getDay() = 0)
-    const sunday = new Date("2026-09-21T12:00:00Z");
+    // 2026-09-20 is a Sunday (verified: getDay() = 0)
+    const sunday = new Date("2026-09-20T12:00:00Z");
     expect(sunday.getDay()).toBe(0); // Sanity check: Sunday
 
     localStorage.setItem(STORAGE_KEY_NO_MEETING_DAYS, JSON.stringify([]));
@@ -179,7 +181,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
   //       {ok:false, reason:'has_meeting'}을 반환한다
   // ══════════════════════════════════════════════════════════════════════════════
   it("AC-3[P0]: should reject if today has a meeting record", () => {
-    const today = new Date("2026-09-19T12:00:00Z"); // Friday
+    const today = new Date("2026-09-18T12:00:00Z"); // Friday
     const todayRecord = makeRecord("TeamA", 50000, today.toISOString());
 
     localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify([todayRecord]));
@@ -194,7 +196,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
   });
 
   it("AC-3[P0]: should reject if active meeting exists (regardless of today)", () => {
-    const today = new Date("2026-09-19T12:00:00Z");
+    const today = new Date("2026-09-18T12:00:00Z");
     const activeMeeting = {
       id: "active-1",
       setup: {
@@ -291,17 +293,20 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
 
     // Setup: inject a storage write failure scenario
     // We'll mock localStorage.setItem to fail on the first call
-    const originalSetItem = localStorage.setItem;
-    let callCount = 0;
+    const originalSetItem = Storage.prototype.setItem;
+    let armed = false;
 
-    localStorage.setItem = vi.fn((key, value) => {
-      callCount++;
-      if (callCount === 1 && key === STORAGE_KEY_NO_MEETING_DAYS) {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ) {
+      if (armed && key === STORAGE_KEY_NO_MEETING_DAYS) {
         // Simulate QuotaExceededError
         const err = new DOMException("Quota exceeded", "QuotaExceededError");
         throw err;
       }
-      originalSetItem.call(localStorage, key, value);
+      originalSetItem.call(this, key, value);
     });
 
     localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify([]));
@@ -309,6 +314,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
     localStorage.setItem(STORAGE_KEY_NO_MEETING_DAYS, initialState);
     localStorage.setItem(STORAGE_KEY_BADGES, JSON.stringify([]));
 
+    armed = true;
     const result = declareNoMeetingDay(today);
 
     expect(result.ok).toBe(false);
@@ -320,8 +326,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
     const restored = localStorage.getItem(STORAGE_KEY_NO_MEETING_DAYS);
     expect(restored).toBe(initialState);
 
-    // Restore original setItem
-    localStorage.setItem = originalSetItem;
+    spy.mockRestore();
   });
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -332,17 +337,17 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
     const wednesday = new Date("2026-09-17T12:00:00Z");
     expect(isWeekday(wednesday)).toBe(true);
 
-    // 2026-09-20 is Saturday (weekend)
-    const saturday = new Date("2026-09-20T12:00:00Z");
+    // 2026-09-19 is Saturday (weekend)
+    const saturday = new Date("2026-09-19T12:00:00Z");
     expect(isWeekday(saturday)).toBe(false);
 
     // 2026-09-21 is Sunday (weekend)
-    const sunday = new Date("2026-09-21T12:00:00Z");
+    const sunday = new Date("2026-09-20T12:00:00Z");
     expect(isWeekday(sunday)).toBe(false);
   });
 
   it("canDeclareToday: should return true for weekday with no active/records", () => {
-    const friday = new Date("2026-09-19T12:00:00Z");
+    const friday = new Date("2026-09-18T12:00:00Z");
 
     localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify([]));
     localStorage.setItem("mcc:v1:active", JSON.stringify(null));
@@ -354,7 +359,7 @@ describe("Packet 0006: 팀 랭킹, 챌린지 규칙, declareNoMeetingDay", () =>
   });
 
   it("canDeclareToday: should reject weekend", () => {
-    const saturday = new Date("2026-09-20T12:00:00Z");
+    const saturday = new Date("2026-09-19T12:00:00Z");
 
     const result = canDeclareToday(saturday);
 
