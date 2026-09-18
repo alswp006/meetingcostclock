@@ -13,11 +13,11 @@ import { loadActive, loadBadges, loadNoMeetingDays, parseArray, readRaw } from "
 import type { BadgeId, EarnedBadge, NoMeetingDay } from "@/lib/types";
 
 const BADGES: { id: BadgeId; name: string; desc: string; icon: string }[] = [
-  { id: "first_free_day", name: "첫 회의 없는 날", desc: "처음 회의 없는 날을 선언했어요", icon: "icon-check-circle-mono" },
-  { id: "streak_3", name: "3일 연속", desc: "평일 3일 연속으로 선언했어요", icon: "icon-calendar-check-mono" },
-  { id: "total_5", name: "누적 5일", desc: "회의 없는 날을 5일 선언했어요", icon: "icon-star-mono" },
-  { id: "total_10", name: "누적 10일", desc: "회의 없는 날을 10일 선언했어요", icon: "icon-star-mono" },
-  { id: "total_20", name: "누적 20일", desc: "회의 없는 날을 20일 선언했어요", icon: "icon-star-mono" },
+  { id: "first_free_day", name: "첫 회의 없는 날", desc: "처음 선언했어요", icon: "icon-check-circle-mono" },
+  { id: "streak_3", name: "3일 연속", desc: "평일 3일 연속 선언", icon: "icon-calendar-check-mono" },
+  { id: "total_5", name: "누적 5일", desc: "5일 선언했어요", icon: "icon-star-mono" },
+  { id: "total_10", name: "누적 10일", desc: "10일 선언했어요", icon: "icon-star-mono" },
+  { id: "total_20", name: "누적 20일", desc: "20일 선언했어요", icon: "icon-star-mono" },
 ];
 
 function badgeMeta(id: BadgeId) {
@@ -138,8 +138,7 @@ export default function Challenge() {
       ) : (
         monthDays.map((d) => <ListRow key={d.id} contents={<ListRow.Texts type="1RowTypeA" top={d.date} />} />)
       )}
-      <Spacing size={120} />
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} header={<BottomSheet.Header>새 배지를 받았어요</BottomSheet.Header>}>
+            <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} header={<BottomSheet.Header>새 배지를 받았어요</BottomSheet.Header>}>
         {newBadges.map((b) => {
           const m = badgeMeta(b.badgeId);
           return (

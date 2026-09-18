@@ -26,7 +26,7 @@ export function ScreenScaffold({
   return (
     <PageShell style={top ? { paddingTop: 0 } : undefined}>
       {top}
-      <div style={{ padding: "16px 16px 0" }}>{children}</div>
+      <div style={{ padding: "16px 16px calc(var(--toss-safe-area-bottom) + 96px)" }}>{children}</div>
       {bottom}
     </PageShell>
   );
