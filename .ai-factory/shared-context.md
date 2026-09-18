@@ -229,6 +229,8 @@ export type RouteS
   lib/
     __tests__/
     autoFinalize.ts
+    challenge.ts
+    challengeRules.ts
     constants.ts
     contract.ts
     cost.ts
@@ -237,6 +239,7 @@ export type RouteS
     meetingLifecycle.ts
     meetingTime.ts
     messages.ts
+    ranking.ts
     schema.ts
     storage.ts
     storageBase.ts
@@ -263,6 +266,8 @@ export type RouteS
 ### Exports (src/lib/)
 - __tests__/failSetItemOnNth.ts: export function failSetItemOnNth(n: number, errorName = "QuotaExceededError")
 - autoFinalize.ts: export function resetAutoFinalizeRetries(): void; export function autoFinalizeStale(now: number): AutoFinalizeResult
+- challenge.ts: export function declareNoMeetingDay(now: Date): DeclareResult
+- challengeRules.ts: export function isWeekday(date: Date): boolean; export function canDeclareToday(date: Date):
 - constants.ts: export const ANNUAL_WORK_HOURS = 2080; export const MAX_DURATION_SEC = 28800; export const MAX_WALL_MS = 43200000; export const MIN_SAVE_SEC = 10; export const HISTORY_PAGE_SIZE = 20; export const RECORDS_MAX = 500; export const OUTCOME_FACTOR =; export const STORAGE_KEY_LAST_SETUP = "mcc:v1:lastSetup"
 - contract.ts: export type Meeting =; export type Record =; export type RouteState =; export type calculateCostFn = (durationMs: number, hourlyRateKrw: number) => number; export type formatDurationFn = (durationMs: number) => string; export type formatPriceFn = (amountKrw: number, opts?:; export type createQueryFn = (opts:; export type saveMeetingFn = (meeting: Meeting) => Promise<void>
 - cost.ts: export interface CalcHourlyResult; export interface CalcWasteResult; export function calcHourly( attendees: number, salaryManwon: number ): CalcHourlyResult; export function calcCost( attendees: number, salaryManwon: number, sec: number ): number; export function calcWaste( record:; export function calculateCost(durationMs: number, hourlyRateKrw: number): number
@@ -271,9 +276,9 @@ export type RouteS
 - meetingLifecycle.ts: export type StartResult = |; export function startMeeting(setup: MeetingSetupInput, now: number): StartResult; export function pauseMeeting(now: number): SaveResult; export function resumeMeeting(now: number): SaveResult
 - meetingTime.ts: export type CapReason = "elapsed_cap" | "wall_cap"; export type StaleDetail = |; export function getElapsedSec(active: TimeFields, now: number): number; export function getCapAt(active: TimeFields):; export function resolveStale(active: TimeFields, now: number): StaleResult & StaleDetail; export function localDateKeysBetween( startMs: number | Date, endMs: number | Date, ): string[]
 - messages.ts: export const QUOTA_TOAST = "저장 공간이 부족해요. 오래된 기록을 삭제해주세요"; export const TOO_SHORT = "10초 미만 회의는 저장되지 않아요"; export const NO_MEETING_CANCELLED = "오늘 회의가 기록되어 '회의 없는 날'이 취소됐어요"; export const AUTO_CLOSED_8H = "8시간이 지나 회의를 자동 종료했어요"; export const AUTO_CLOSED_12H = "12시간이 지나 회의를 자동 종료했어요"; export const RESTART_SAVED = "이전 회의를 저장했어요. 회고는 기록 탭에서 입력할 수 있어요"; export const NO_ACTIVE_MEETING = "진행 중인 회의가 없어요"; export const RECORD_DELETED = "기록을 삭제했어요"
+- ranking.ts: export function rankTeams(records: MeetingRecord[], now: Date): TeamRank[]
 - schema.ts: export function isMeetingSetupInput(v: unknown): v is MeetingSetupInput; export function isMeetingSetup(v: unknown): v is MeetingSetup; export function isActiveMeeting(v: unknown): v is ActiveMeeting; export function isMeetingRecord(v: unknown): v is MeetingRecord; export function isNoMeetingDay(v: unknown): v is NoMeetingDay; export function isEarnedBadge(v: unknown): v is EarnedBadge; export function normalizeRecords(raw: unknown): MeetingRecord[]; export function normalizeNoMeetingDays(raw: unknown): NoMeetingDay[]
-- storageBase.ts: export type ReadResult = |; export function readRaw(key: string): ReadResult; export function parseArray( r: ReadResult, ):; export function writeRaw(key: string, value: unknown): SaveResult; export function newId(): string; export function loadLastSetup(): MeetingSetup | null; export function saveLastSetup(input: MeetingSetupInput): SaveResult; export function loadActive(): ActiveMeeting | null
--...
+- storageBase.ts: export type ReadResult = |; export function readRaw(key: string):...
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
 
 ## Already Implemented (do NOT duplicate or overwrite)
