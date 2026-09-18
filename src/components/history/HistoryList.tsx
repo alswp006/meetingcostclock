@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { AlertDialog, Asset, BottomSheet, Button, ListRow, Paragraph, Spacing } from "@toss/tds-mobile";
+import { AlertDialog, Asset, BottomSheet, Button, ListRow, Paragraph, Spacing, Toast } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { useNavigate } from "react-router-dom";
 import { AdSlot } from "@/components/AdSlot";
@@ -7,7 +7,14 @@ import { Card } from "@/components/Card";
 import { Sparkline } from "@/components/Sparkline";
 import { EmptyState, LoadingState } from "@/components/StateView";
 import { deleteRecord, loadRecordsPage } from "@/lib/storage";
+import { useToastQueue } from "@/hooks/useToastQueue";
 import { formatWon } from "@/lib/format";
+import {
+  QUOTA_TOAST,
+  RECORD_ALREADY_DELETED,
+  RECORD_DELETED,
+  RECORD_DELETE_FAILED,
+} from "@/lib/messages";
 import type { MeetingRecord } from "@/lib/types";
 
 const AD_AFTER_ROW = 5;
@@ -48,6 +55,7 @@ function readThrough(count: number): Loaded {
 
 export function HistoryList() {
   const navigate = useNavigate();
+  const toast = useToastQueue();
   const [state, setState] = useState<Loaded | null>(null);
   const [menuFor, setMenuFor] = useState<MeetingRecord | null>(null);
   const [confirmFor, setConfirmFor] = useState<MeetingRecord | null>(null);
@@ -84,6 +92,8 @@ export function HistoryList() {
 
   if (state.total === 0) {
     return (
+      <>
+      <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
       <EmptyState
         testId="history-empty"
         fill
@@ -96,6 +106,7 @@ export function HistoryList() {
           </Button>
         }
       />
+      </>
     );
   }
 
@@ -104,12 +115,16 @@ export function HistoryList() {
     setConfirmFor(null);
     if (!target) return;
     fireHaptic("tickMedium");
-    deleteRecord(target.id);
+    const r = deleteRecord(target.id);
+    if (r.ok) toast.push(RECORD_DELETED);
+    else if (r.reason === "not_found") toast.push(RECORD_ALREADY_DELETED);
+    else toast.push(r.reason === "quota" ? QUOTA_TOAST : RECORD_DELETE_FAILED);
     reload(Math.max(state.items.length - 1, 1));
   };
 
   return (
     <>
+      <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
       {trend.length >= 2 && (
         <>
           <Card testId="history-trend">
@@ -134,7 +149,7 @@ export function HistoryList() {
                   variant="weak"
                   size="small"
                   data-testid="record-more-button"
-                  aria-label="기록 메뉴"
+                  aria-label="더보기"
                   onClick={(e: { stopPropagation: () => void }) => {
                     e.stopPropagation();
                     fireHaptic("tickWeak");
