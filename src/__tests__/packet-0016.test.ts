@@ -9,12 +9,13 @@ const mockShare = vi.fn<(args: unknown) => Promise<void>>(async () => {
   throw new Error("share unsupported");
 });
 const mockSetClipboardText = vi.fn(async () => undefined);
+const mockSaveBase64Data = vi.fn<(args: unknown) => Promise<void>>(async () => undefined);
 
 vi.mock("@apps-in-toss/web-framework", () => ({
   generateHapticFeedback: vi.fn(),
   share: (...a: unknown[]) => (mockShare as any)(...a),
   setClipboardText: (...a: unknown[]) => (mockSetClipboardText as any)(...a),
-  saveBase64Data: vi.fn(async () => undefined),
+  saveBase64Data: (...a: unknown[]) => (mockSaveBase64Data as any)(...a),
 }));
 
 vi.mock("@/components/TossRewardAd", () => ({
@@ -129,38 +130,31 @@ describe("[부가] S6 공유 카드 페이지 (/report/:id/card)", () => {
     expect(screen.getByRole("button", { name: "텍스트 공유" })).toBeInTheDocument();
   });
 
-  it("AC-2[P1]: '이미지 저장'은 canvas.toDataURL 결과로 a[download] 클릭을 일으킨다", () => {
+  it("AC-2[P1]: '이미지 저장'은 SDK saveBase64Data로 저장하고 성공 토스트를 띄운다", async () => {
     seed({ shareUnlocked: true });
     const toDataURL = vi
       .spyOn(HTMLCanvasElement.prototype, "toDataURL")
       .mockReturnValue("data:image/png;base64,AAAA");
-    const clicked: HTMLAnchorElement[] = [];
-    const clickSpy = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(function (this: HTMLAnchorElement) {
-        clicked.push(this);
-      });
     renderAt("r1");
     fireEvent.click(screen.getByRole("button", { name: "이미지 저장" }));
-    expect(toDataURL).toHaveBeenCalled();
-    expect(clicked.length).toBeGreaterThanOrEqual(1);
-    expect(clicked[0].href).toContain("data:image/png;base64,AAAA");
-    expect(clicked[0].hasAttribute("download")).toBe(true);
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("이미지를 저장했어요"));
+    expect(mockSaveBase64Data).toHaveBeenCalledWith(expect.objectContaining({ data: "AAAA", mimeType: "image/png" }));
     toDataURL.mockRestore();
-    clickSpy.mockRestore();
   });
 
-  it("AC-3[P0]: '텍스트 공유'는 buildShareText 결과를 클립보드로 보내고 복사 토스트를 띄운다(폴백)", async () => {
+  it("AC-6: SDK 저장이 실패하면 실패 토스트를 띄운다", async () => {
+    seed({ shareUnlocked: true });
+    mockSaveBase64Data.mockRejectedValueOnce(new Error("denied"));
+    renderAt("r1");
+    fireEvent.click(screen.getByRole("button", { name: "이미지 저장" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("이미지를 저장하지 못했어요"));
+  });
+
+  it("AC-10: 공유가 실패하면 '공유하지 못했어요' 토스트를 띄운다", async () => {
     seed({ shareUnlocked: true });
     renderAt("r1");
-    const text = buildShareText(rec);
     fireEvent.click(screen.getByRole("button", { name: "텍스트 공유" }));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("공유 문구를 복사했어요"));
-    const sent = [...writeText.mock.calls, ...mockSetClipboardText.mock.calls].map((c: any[]) =>
-      typeof c[0] === "string" ? c[0] : c[0]?.text,
-    );
-    expect(sent).toContain(text);
-    expect(text).toContain("주간 회의");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("공유하지 못했어요"));
   });
 
   it("AC-3[P1]: 공유 함수가 성공하면 buildShareText 결과가 share로 전달된다", async () => {
