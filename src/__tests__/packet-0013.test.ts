@@ -75,6 +75,33 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// 화면에 보이는 줄 — 인라인 조각(TDS Paragraph.Text는 벤더에서 <span>이다)은 한 줄로 이어 붙고, 블록 요소
+// (div/p, Spacing)에서 줄이 바뀐다. jsdom은 레이아웃을 안 하므로 "한 줄로 뭉친 히어로"를 이렇게 잰다.
+const BLOCK_TAGS = new Set(["DIV", "P", "SECTION", "HEADER", "NAV", "UL", "OL", "LI", "H1", "H2", "H3"]);
+function visualLines(root: Element): string[] {
+  const lines: string[] = [];
+  let cur = "";
+  const flush = () => {
+    if (cur.trim()) lines.push(cur.trim());
+    cur = "";
+  };
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      cur += node.textContent ?? "";
+      return;
+    }
+    if (!(node instanceof HTMLElement)) return;
+    const display = node.style.display;
+    const block = display ? !display.startsWith("inline") : BLOCK_TAGS.has(node.tagName);
+    if (block) flush();
+    node.childNodes.forEach(walk);
+    if (block) flush();
+  };
+  walk(root);
+  flush();
+  return lines;
+}
+
 describe("S4 회고 페이지 (/wrapup/:id: 결론 여부 선택)", () => {
   it("AC-1[P0]: 존재하지 않는 id면 '기록을 찾을 수 없어요'를 표시한다", () => {
     seed();
@@ -145,5 +172,17 @@ describe("S4 회고 페이지 (/wrapup/:id: 결론 여부 선택)", () => {
     expect(screen.getByTestId("pathname").textContent).toBe(`/wrapup/${RECORD.id}`);
     expect(stored().outcome).toBeNull();
     expect(stored().wasteCost).toBeNull();
+  });
+
+  it("M1: 요약 히어로는 라벨 / 큰 금액 / 메타가 각각 한 줄씩이다(한 줄로 뭉치지 않는다)", () => {
+    seed();
+    renderAt(`/wrapup/${RECORD.id}`);
+    const hero = screen.getByTestId("wrapup-summary");
+    // 옛 화면: ["이번 회의 비용90,144원45분 · 5명"] — 라벨·금액·메타가 한 줄로 붙었다
+    expect(visualLines(hero)).toEqual(["이번 회의 비용", "90,144원", "45분 · 5명"]);
+    // 리포트 히어로와 같은 위계: 라벨은 작은 글씨, 금액은 t1, 메타는 t6
+    expect(screen.getByText("이번 회의 비용")).toHaveAttribute("data-typography", "st11");
+    expect(screen.getByText("90,144원")).toHaveAttribute("data-typography", "t1");
+    expect(screen.getByText("45분 · 5명")).toHaveAttribute("data-typography", "t6");
   });
 });

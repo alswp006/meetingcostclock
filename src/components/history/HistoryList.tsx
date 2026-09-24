@@ -8,7 +8,7 @@ import { Sparkline } from "@/components/Sparkline";
 import { EmptyState, LoadingState } from "@/components/StateView";
 import { deleteRecord, loadRecordsPage } from "@/lib/storage";
 import { useToastQueue } from "@/hooks/useToastQueue";
-import { formatWon } from "@/lib/format";
+import { formatDurationLabel, formatWon } from "@/lib/format";
 import {
   QUOTA_TOAST,
   RECORD_ALREADY_DELETED,
@@ -29,8 +29,7 @@ function fireHaptic(type: "tickWeak" | "tickMedium") {
 
 function subtitle(r: MeetingRecord): string {
   const d = new Date(r.endedAt);
-  const minutes = Math.max(1, Math.round((Number(r.durationSec) || 0) / 60));
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 · ${minutes}분 · ${r.attendees}명`;
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 · ${formatDurationLabel(Number(r.durationSec))} · ${r.attendees}명`;
 }
 
 interface Loaded {

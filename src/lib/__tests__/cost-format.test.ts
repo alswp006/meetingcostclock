@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { calcHourly, calcCost, calcWaste } from "@/lib/cost";
-import { formatWon, formatHMS, toLocalDateKey } from "@/lib/format";
+import { formatWon, formatHMS, toLocalDateKey, formatDurationLabel } from "@/lib/format";
 import * as m from "@/lib/messages";
 
 describe("cost/format/messages", () => {
@@ -51,5 +51,32 @@ describe("contract functions", () => {
     expect(formatPrice(1_250_000, { compact: true })).toBe("125만원");
     expect(formatPrice(15000, { compact: true })).toBe("1.5만원");
     expect(formatPrice(9000, { compact: true })).toBe("9,000원");
+  });
+});
+
+describe("formatDurationLabel — 모든 화면(회고·리포트·기록·홈)이 쓰는 회의 길이 표기", () => {
+  it("1분 미만은 초로 말한다 — 12초 회의가 '1분'으로 반올림되지 않는다", () => {
+    expect(formatDurationLabel(12)).toBe("12초");
+    expect(formatDurationLabel(0)).toBe("0초");
+    expect(formatDurationLabel(59.9)).toBe("59초");
+  });
+  it("1시간 미만은 분(내림) — 공유 카드의 MM:SS와 같은 값을 가리킨다", () => {
+    expect(formatDurationLabel(60)).toBe("1분");
+    expect(formatDurationLabel(119)).toBe("1분");
+    expect(formatDurationLabel(2700)).toBe("45분");
+    expect(formatDurationLabel(3599)).toBe("59분");
+  });
+  it("1시간 이상은 시간(+분)", () => {
+    expect(formatDurationLabel(3600)).toBe("1시간");
+    expect(formatDurationLabel(5400)).toBe("1시간 30분");
+    expect(formatDurationLabel(28800)).toBe("8시간");
+  });
+  it("손상 값은 0초로 — 음수·NaN이 화면에 새지 않는다", () => {
+    expect(formatDurationLabel(-5)).toBe("0초");
+    expect(formatDurationLabel(Number.NaN)).toBe("0초");
+    expect(formatDurationLabel(Number("abc"))).toBe("0초");
+  });
+  it("계약 함수 formatDuration은 그대로다(공유 카드 00:12)", () => {
+    expect(formatDuration(12_000)).toBe("00:12");
   });
 });

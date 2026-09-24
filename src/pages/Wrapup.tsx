@@ -1,27 +1,22 @@
 import { useState } from "react";
-import type React from "react";
 import { Navigate } from "react-router-dom";
-import { Chip, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
+import { Chip, ChipItem, Paragraph, Spacing, Toast, Top } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 import { ScreenScaffold } from "@/components/ScreenScaffold";
-import { Card } from "@/components/Card";
+import { SummaryHero } from "@/components/SummaryHero";
+import { CountUp } from "@/components/CountUp";
 import { SubmitFooter } from "@/components/BottomCTA";
 import { RecordNotFound } from "@/components/RecordNotFound";
 import { useRecordParam } from "@/hooks/useRecordParam";
 import { useToastQueue } from "@/hooks/useToastQueue";
 import { calcWaste } from "@/lib/cost";
-import { formatWon } from "@/lib/format";
+import { formatDurationLabel } from "@/lib/format";
 import { QUOTA_TOAST } from "@/lib/messages";
 import { updateRecord } from "@/lib/storage";
 import type { MeetingOutcome } from "@/lib/types";
 
-// 패킷 계약: 옵션 하나가 selected/onClick을 받는 Chip이다(.d.ts엔 그룹 props만 있어 느슨하게 캐스팅).
-const SelectChip = Chip as unknown as React.ComponentType<{
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}>;
-
+// TDS Chip은 그룹 컨테이너(div)이고 개별 칩은 ChipItem(button, selected/onClick)이다 — 둘 다 최상위 export.
+// (Chip 자체에 selected/onClick을 주면 알약이 아니라 맨 텍스트로 렌더되고 선택 표시도 안 난다.)
 const OPTIONS: { value: MeetingOutcome; label: string }[] = [
   { value: "decided", label: "결론 났어요" },
   { value: "partial", label: "일부만 났어요" },
@@ -46,8 +41,6 @@ export default function Wrapup() {
   if (!record) return <RecordNotFound />;
   if (done) return <Navigate to={`/report/${record.id}`} replace />;
 
-  const minutes = Math.max(1, Math.round(record.durationSec / 60));
-
   const submit = () => {
     if (!outcome || saving) return;
     setSaving(true);
@@ -69,25 +62,28 @@ export default function Wrapup() {
     <ScreenScaffold
       top={<Top title="회의는 어땠어요?" />}
       bottom={
-        <SubmitFooter label="리포트 보기" disabled={!outcome} loading={saving} onClick={submit} />
+        <SubmitFooter
+          label="리포트 보기"
+          disabled={!outcome}
+          loading={saving}
+          onClick={submit}
+          hint={outcome ? undefined : "결론 여부를 고르면 리포트를 볼 수 있어요"}
+        />
       }
     >
       <Spacing size={16} />
-      <Card testId="wrapup-summary">
-        <Paragraph.Text typography="st6" color="secondary">
-          이번 회의 비용
-        </Paragraph.Text>
-        <Paragraph.Text typography="t2">{formatWon(record.totalCost)}</Paragraph.Text>
-        <Paragraph.Text typography="st5" color="secondary">
-          {minutes}분 · {record.attendees}명
-        </Paragraph.Text>
-      </Card>
+      <SummaryHero
+        testId="wrapup-summary"
+        label="이번 회의 비용"
+        value={<CountUp value={record.totalCost} />}
+        caption={`${formatDurationLabel(record.durationSec)} · ${record.attendees}명`}
+      />
       <Spacing size={24} />
       <Paragraph.Text typography="t5">결론이 났나요?</Paragraph.Text>
       <Spacing size={8} />
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <Chip kind="select" margin="none" wrap>
         {OPTIONS.map((o) => (
-          <SelectChip
+          <ChipItem
             key={o.value}
             selected={outcome === o.value}
             onClick={() => {
@@ -96,9 +92,9 @@ export default function Wrapup() {
             }}
           >
             {o.label}
-          </SelectChip>
+          </ChipItem>
         ))}
-      </div>
+      </Chip>
       <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
     </ScreenScaffold>
   );

@@ -44,7 +44,8 @@ vi.mock("@toss/tds-mobile", async () => {
       },
     ),
     Toast: ({ open, text }: any) => (open ? h("div", { role: "status" }, text) : null),
-    Chip: ({ children, onClick, selected }: any) =>
+    Chip: passthrough("div"),
+    ChipItem: ({ children, onClick, selected }: any) =>
       h("button", { onClick, "aria-pressed": !!selected }, children),
     Asset: {
       ContentIcon: () => h("span"),

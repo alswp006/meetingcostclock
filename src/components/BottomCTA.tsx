@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FixedBottomCTA, Button } from "@toss/tds-mobile";
+import { FixedBottomCTA, Button, Paragraph } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-framework";
 
 /**
@@ -28,12 +28,18 @@ export function SubmitFooter({
   onClick,
   disabled,
   loading,
+  hint,
 }: {
   label: ReactNode;
   onClick: () => void;
   disabled?: boolean;
   /** 제출 중 표시 — TDS ButtonProps.loading 패스스루. ui-design.md "제출 중 상태" 규칙의 실행 수단. */
   loading?: boolean;
+  /**
+   * CTA 바로 위 한 줄 안내(TDS FixedBottomCTA topAccessory). 버튼이 비활성인 이유를 말할 때 쓴다 —
+   * ui-design.md "제출 버튼만 비활성이고 이유를 안 말하면 사용자는 막힌 이유를 모른다".
+   */
+  hint?: ReactNode;
 }) {
   return (
     <FixedBottomCTA
@@ -43,6 +49,18 @@ export function SubmitFooter({
       }}
       disabled={disabled || loading}
       loading={loading}
+      // hint가 없으면 prop 자체를 넘기지 않는다(기존 호출부의 렌더 결과를 그대로 둔다).
+      {...(hint
+        ? {
+            topAccessory: (
+              <div data-testid="submit-footer-hint" style={{ textAlign: "center", paddingBottom: 8 }}>
+                <Paragraph.Text typography="t7" color="var(--adaptiveGrey600)">
+                  {hint}
+                </Paragraph.Text>
+              </div>
+            ),
+          }
+        : {})}
     >
       {label}
     </FixedBottomCTA>

@@ -9,7 +9,7 @@ import { CountUp } from "@/components/CountUp";
 import { EmptyState } from "@/components/StateView";
 import { useToastQueue } from "@/hooks/useToastQueue";
 import { calcCost } from "@/lib/cost";
-import { formatWon } from "@/lib/format";
+import { formatDurationLabel, formatWon } from "@/lib/format";
 import { getElapsedSec } from "@/lib/meetingTime";
 import { STORAGE_KEY_RECORDS } from "@/lib/constants";
 import { loadActive, readRaw } from "@/lib/storage";
@@ -40,8 +40,7 @@ function loadAllRecords(): MeetingRecord[] {
 
 function subtitle(r: MeetingRecord): string {
   const d = new Date(r.endedAt);
-  const minutes = Math.max(1, Math.round((Number(r.durationSec) || 0) / 60));
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 · ${minutes}분 · ${r.attendees}명`;
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 · ${formatDurationLabel(Number(r.durationSec))} · ${r.attendees}명`;
 }
 
 export default function Home() {

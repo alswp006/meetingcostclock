@@ -29,8 +29,14 @@ export function mockTds() {
     // SubmitFooter(BottomCTA.tsx)의 기반 — 스텁이 없으면 SubmitFooter를 렌더하는 테스트가
     // undefined 엘리먼트로 죽는다(적대 리뷰 2026-08-30 실측). loading은 disabled로 표현해
     // "제출 중 비활성" 단언이 가능하게 한다.
-    FixedBottomCTA: ({ children, onClick, disabled, loading, ...props }: any) =>
-      React.createElement("button", { onClick, disabled: disabled || loading || undefined, "data-loading": loading ? "true" : undefined, ...props }, children),
+    // topAccessory는 벤더처럼 버튼 위에 렌더한다(버튼 속성으로 흘리면 DOM 경고 + 안내 문구가 안 보인다).
+    FixedBottomCTA: ({ children, onClick, disabled, loading, topAccessory, ...props }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        topAccessory,
+        React.createElement("button", { onClick, disabled: disabled || loading || undefined, "data-loading": loading ? "true" : undefined, ...props }, children),
+      ),
 
     ListRow: Object.assign(
       ({ children, contents, left, right, onClick, ...props }: any) =>
@@ -167,10 +173,13 @@ export function mockTds() {
       { Header: ({ children }: any) => React.createElement("div", null, children) },
     ),
 
-    Chip: ({ children, selected, onClick }: any) =>
+    // 벤더 모양 그대로: Chip = 그룹 컨테이너(div, selected/onClick 없음), ChipItem = 개별 칩(button).
+    // Chip을 개별 칩처럼 목킹하면 앱이 Chip에 selected/onClick을 주는 오용(실기기에선 맨 텍스트)이 초록으로 통과한다.
+    Chip: ({ children }: any) => React.createElement("div", { role: "group" }, children),
+    ChipItem: ({ children, selected, disabled, onClick }: any) =>
       React.createElement(
         "button",
-        { role: "button", "aria-pressed": selected, onClick },
+        { type: "button", "aria-pressed": !!selected, disabled: disabled || undefined, onClick },
         children,
       ),
 

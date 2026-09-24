@@ -178,4 +178,13 @@ describe("[부가] S7 기록 페이지 (/history: 목록 탭, 팀 랭킹 탭, �
     expect(flat(rows[1])).toContain("2위팀B50,000원");
     expect(screen.queryByText(/팀C/)).toBeNull();
   });
+
+  it("M2: 행 부제의 회의 길이는 공통 표기다 — 12초 회의는 '12초', 45분 회의는 '45분'", async () => {
+    seedRecords([makeRecord(0, { durationSec: 12 }), makeRecord(1)]);
+    renderHistory();
+    await waitFor(() => expect(rowCount()).toBe(2));
+    expect(screen.getByText("9월 15일 · 12초 · 5명")).toBeInTheDocument();
+    expect(screen.getByText("9월 15일 · 45분 · 5명")).toBeInTheDocument();
+    expect(screen.queryByText(/· 1분 ·/)).toBeNull();
+  });
 });

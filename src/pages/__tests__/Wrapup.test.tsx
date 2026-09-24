@@ -12,11 +12,12 @@ vi.mock("@toss/tds-mobile", () => {
     }),
     Paragraph: { Text: ({ children }: any) => h("p", null, children) },
     Spacing: () => null,
-    Chip: ({ children, selected, onClick }: any) =>
+    Chip: ({ children }: any) => h("div", { role: "group" }, children),
+    ChipItem: ({ children, selected, onClick }: any) =>
       h("button", { "aria-pressed": !!selected, onClick }, children),
     Toast: ({ open, text }: any) => (open ? h("div", { role: "status" }, text) : null),
-    FixedBottomCTA: ({ children, onClick, disabled }: any) =>
-      h("button", { onClick, disabled }, children),
+    FixedBottomCTA: ({ children, onClick, disabled, topAccessory }: any) =>
+      h(React.Fragment, null, topAccessory, h("button", { onClick, disabled }, children)),
     Button: ({ children, onClick }: any) => h("button", { onClick }, children),
   };
 });
@@ -100,5 +101,36 @@ describe("Wrapup", () => {
     spy.mockRestore();
     expect(screen.getByRole("status")).toHaveTextContent(QUOTA_TOAST);
     expect(screen.queryByTestId("path")).toBeNull();
+  });
+
+  it("M2: 12초 회의는 '1분'이 아니라 '12초'로 보인다", () => {
+    localStorage.setItem(KEY, JSON.stringify([{ ...rec, durationSec: 12, totalCost: 576, attendees: 6 }]));
+    renderAt("r1");
+    expect(screen.getByText("12초 · 6명")).toBeInTheDocument();
+    expect(screen.queryByText(/1분/)).toBeNull();
+  });
+
+  it("M4: 결론 선택지는 칩 그룹 안의 선택 칩이고, 고르면 선택 상태가 보인다", () => {
+    localStorage.setItem(KEY, JSON.stringify([rec]));
+    renderAt("r1");
+    const group = screen.getByRole("group");
+    const chips = ["결론 났어요", "일부만 났어요", "결론이 없었어요"].map((n) => screen.getByRole("button", { name: n }));
+    for (const c of chips) {
+      expect(group).toContainElement(c);
+      expect(c).toHaveAttribute("aria-pressed", "false");
+    }
+    fireEvent.click(chips[1]);
+    expect(chips[1]).toHaveAttribute("aria-pressed", "true");
+    expect(chips[0]).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("M4: 고르기 전에는 비활성 CTA 옆에 이유를 말하고, 고르면 안내가 사라진다", () => {
+    localStorage.setItem(KEY, JSON.stringify([rec]));
+    renderAt("r1");
+    expect(screen.getByRole("button", { name: "리포트 보기" })).toBeDisabled();
+    expect(screen.getByText("결론 여부를 고르면 리포트를 볼 수 있어요")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "결론 났어요" }));
+    expect(screen.getByRole("button", { name: "리포트 보기" })).toBeEnabled();
+    expect(screen.queryByText("결론 여부를 고르면 리포트를 볼 수 있어요")).toBeNull();
   });
 });

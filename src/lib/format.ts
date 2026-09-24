@@ -26,6 +26,21 @@ export function toLocalDateKey(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
+/**
+ * 화면에 보이는 회의 길이 — 회고·리포트·기록·홈이 모두 이 함수 하나로 같은 값을 말한다.
+ * 12 → "12초", 2700 → "45분", 3600 → "1시간", 5400 → "1시간 30분" (단위 아래는 내림 — 공유 카드의
+ * formatDuration "00:12"·"01:59"와 같은 값을 가리킨다. 반올림하면 12초 회의가 "1분"이 된다).
+ */
+export function formatDurationLabel(durationSec: number): string {
+  const s = Number.isFinite(durationSec) ? Math.max(0, Math.floor(durationSec)) : 0;
+  if (s < 60) return `${s}초`;
+  const totalMin = Math.floor(s / 60);
+  if (totalMin < 60) return `${totalMin}분`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+}
+
 /** 계약 함수: 12345000 → "03:25:45" (1시간 미만은 "MM:SS") */
 export function formatDuration(durationMs: number): string {
   const s = Number.isFinite(durationMs) ? Math.max(0, Math.floor(durationMs / 1000)) : 0;
