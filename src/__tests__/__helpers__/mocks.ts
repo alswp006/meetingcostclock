@@ -167,10 +167,17 @@ export function mockTds() {
     BottomCTA: ({ children }: any) =>
       React.createElement("div", { "data-slot": "bottom-cta" }, children),
 
+    // 벤더 모양 그대로: 제목은 header 슬롯, 하단 버튼은 cta 슬롯(BottomSheet.CTA)으로 들어간다(.d.ts ContentsProps).
+    // children만 렌더하면 슬롯에 둔 올바른 제목·버튼이 테스트에서 사라진다.
     BottomSheet: Object.assign(
-      ({ children, open }: any) =>
-        open ? React.createElement("div", { role: "dialog" }, children) : null,
-      { Header: ({ children }: any) => React.createElement("div", null, children) },
+      ({ children, open, header, headerDescription, cta }: any) =>
+        open ? React.createElement("div", { role: "dialog" }, header, headerDescription, children, cta) : null,
+      {
+        Header: ({ children }: any) => React.createElement("div", null, children),
+        HeaderDescription: ({ children }: any) => React.createElement("div", null, children),
+        CTA: ({ children, onClick, disabled }: any) =>
+          React.createElement("button", { type: "button", onClick, disabled: disabled || undefined }, children),
+      },
     ),
 
     // 벤더 모양 그대로: Chip = 그룹 컨테이너(div, selected/onClick 없음), ChipItem = 개별 칩(button).

@@ -60,8 +60,9 @@ vi.mock("@toss/tds-mobile", async () => {
         Texts: ({ top, bottom }: any) => h(R.Fragment, null, h("span", null, top), h("span", null, bottom)),
       },
     ),
-    BottomSheet: Object.assign(({ children, open }: any) => (open ? h("div", null, children) : null), {
+    BottomSheet: Object.assign(({ children, open, header, cta }: any) => (open ? h("div", null, header, children, cta) : null), {
       Header: passthrough("div"),
+      CTA: btn,
     }),
     Tab: Object.assign(passthrough("div"), { Item: btn }),
   };

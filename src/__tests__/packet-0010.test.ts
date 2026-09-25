@@ -39,8 +39,11 @@ vi.mock("@toss/tds-mobile", () => {
     }),
     ConfirmDialog: Dialog,
     BottomSheet: Object.assign(
-      ({ open, children }: any) => (open ? h("div", { role: "dialog" }, children) : null),
-      { Header: ({ children }: any) => h("div", null, children) },
+      ({ open, children, header, cta }: any) => (open ? h("div", { role: "dialog" }, header, children, cta) : null),
+      {
+        Header: ({ children }: any) => h("div", null, children),
+        CTA: ({ children, onClick }: any) => h("button", { onClick }, children),
+      },
     ),
     Toast: ({ open, text }: any) => (open ? h("div", { role: "status" }, text) : null),
     TextField: R.forwardRef(({ label, help, hasError, variant, ...p }: any, ref: any) =>

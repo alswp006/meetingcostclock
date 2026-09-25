@@ -30,16 +30,18 @@ export function TimerDisplay({ active, now }: { active: ActiveMeeting; now: numb
       />
       <Spacing size={16} />
       <Card testId="timer-plan-card">
-        <Paragraph.Text typography="st6" color={SECONDARY}>
+        <Paragraph.Text typography="t6" color={SECONDARY}>
           {`예정 ${formatMinutes(plannedMinutes)}`}
         </Paragraph.Text>
         {overSec > 0 ? (
           <div data-testid="timer-over">
             <Spacing size={8} />
-            <Paragraph.Text typography="t5" color={DANGER}>
+            {/* Paragraph.Text는 인라인 span(벤더 .d.ts) — 형제 둘을 나란히 두면 한 줄로 붙는다. Spacing으로 쌓는다. */}
+            <Paragraph.Text typography="t6" color={DANGER}>
               {`${formatMinutes(Math.floor(overSec / 60))} 초과`}
             </Paragraph.Text>
-            <Paragraph.Text typography="t5" color={DANGER}>
+            <Spacing size={4} />
+            <Paragraph.Text typography="t4" color={DANGER}>
               {formatWon(overCost)}
             </Paragraph.Text>
           </div>
@@ -47,7 +49,7 @@ export function TimerDisplay({ active, now }: { active: ActiveMeeting; now: numb
         {paused ? (
           <>
             <Spacing size={8} />
-            <Paragraph.Text typography="st5" color={SECONDARY}>
+            <Paragraph.Text typography="t6" color={SECONDARY}>
               일시정지 중
             </Paragraph.Text>
           </>

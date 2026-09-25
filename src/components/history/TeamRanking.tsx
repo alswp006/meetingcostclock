@@ -89,7 +89,7 @@ export function TeamRanking() {
           />
           <MiniBar ratio={t.sharePercent / 100} />
           <Spacing size={4} />
-          <Paragraph.Text typography="st13" color="secondary">
+          <Paragraph.Text typography="st13" color="var(--adaptiveGrey600)">
             {`회의 ${t.count}회`}
           </Paragraph.Text>
           <Spacing size={12} />

@@ -87,7 +87,7 @@ export default function Home() {
       {active && (
         <>
           <Card testId="active-meeting-card">
-            <Paragraph.Text typography="st6" color="secondary">
+            <Paragraph.Text typography="t6" color="var(--adaptiveGrey600)">
               진행 중 · {active.setup.title}
             </Paragraph.Text>
             <Spacing size={4} />

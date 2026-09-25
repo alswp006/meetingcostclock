@@ -28,7 +28,7 @@ vi.mock("@toss/tds-mobile", () => {
       },
     ),
     BottomSheet: Object.assign(
-      ({ open, children }: any) => (open ? h("div", { role: "dialog" }, children) : null),
+      ({ open, children, header, cta }: any) => (open ? h("div", { role: "dialog" }, header, children, cta) : null),
       {
         Header: ({ children }: any) => h("div", null, children),
         HeaderTitle: ({ children }: any) => h("div", null, children),
@@ -154,6 +154,9 @@ describe("[부가] S8 챌린지 페이지 (/challenge)", () => {
     const badges = JSON.parse(localStorage.getItem(BADGES) ?? "[]");
     expect(badges.map((b: any) => b.badgeId)).toEqual(["first_free_day"]);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
+    // 닫기 버튼은 children이 아니라 BottomSheet.CTA 슬롯(시트 가장자리 여백·하단 고정은 벤더가 준다)
+    fireEvent.click(screen.getByRole("button", { name: "확인" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("AC-4[P0]: 새 배지가 없으면(두 번째 선언) BottomSheet가 열리지 않는다", () => {

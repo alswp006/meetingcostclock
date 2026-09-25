@@ -127,7 +127,7 @@ export function HistoryList() {
       {trend.length >= 2 && (
         <>
           <Card testId="history-trend">
-            <Paragraph.Text typography="st6" color="secondary">
+            <Paragraph.Text typography="t6" color="var(--adaptiveGrey600)">
               최근 회의 비용 추이
             </Paragraph.Text>
             <Spacing size={12} />

@@ -122,7 +122,7 @@ export default function Challenge() {
           left={icon(b.icon)}
           contents={<ListRow.Texts type="2RowTypeA" top={b.name} bottom={b.desc} />}
           right={
-            <Paragraph.Text typography="t7" color={earnedIds.has(b.id) ? undefined : "tertiary"}>
+            <Paragraph.Text typography="t7" color={earnedIds.has(b.id) ? undefined : "var(--adaptiveGrey500)"}>
               {earnedIds.has(b.id) ? "획득" : "미획득"}
             </Paragraph.Text>
           }
@@ -138,7 +138,12 @@ export default function Challenge() {
       ) : (
         monthDays.map((d) => <ListRow key={d.id} contents={<ListRow.Texts type="1RowTypeA" top={d.date} />} />)
       )}
-            <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} header={<BottomSheet.Header>새 배지를 받았어요</BottomSheet.Header>}>
+      <BottomSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        header={<BottomSheet.Header>새 배지를 받았어요</BottomSheet.Header>}
+        cta={<BottomSheet.CTA onClick={() => setSheetOpen(false)}>확인</BottomSheet.CTA>}
+      >
         {newBadges.map((b) => {
           const m = badgeMeta(b.badgeId);
           return (
@@ -149,10 +154,6 @@ export default function Challenge() {
             />
           );
         })}
-        <Spacing size={16} />
-        <Button display="block" onClick={() => setSheetOpen(false)}>
-          확인
-        </Button>
       </BottomSheet>
       <Toast open={toast.current !== null} position="bottom" text={toast.current ?? ""} onClose={toast.dismiss} />
     </ScreenScaffold>
